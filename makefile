@@ -2,7 +2,7 @@
 
 .PHONY: test test-verbose test-cover test-service
 
-TEST_PKG ?= ./internal/features/user
+TEST_PKG ?= ./internal/features
 
 # Alvo padrão: roda testes do ms_auth
 test:
@@ -12,7 +12,7 @@ test:
 test-verbose:
 	cd ms_auth && go test -v ./...
 
-test-verbose-user:
+test-verbose-auth:
 	cd ms_auth && go test -v $(TEST_PKG)
 
 # Testes com cobertura

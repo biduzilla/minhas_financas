@@ -1,6 +1,7 @@
 package user
 
 import (
+	"errors"
 	"ms_auth/internal/core/domain/models"
 	"ms_auth/internal/core/validator"
 	"unicode"
@@ -80,6 +81,19 @@ func (d CreateUserDTO) HashPassword() ([]byte, error) {
 		return nil, err
 	}
 	return hash, nil
+}
+
+func (m *User) Matches(plaintextPassword string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword(m.PasswordHash, []byte(plaintextPassword))
+	if err != nil {
+		switch {
+		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
+			return false, nil
+		default:
+			return false, err
+		}
+	}
+	return true, nil
 }
 
 func (m *User) Validate(v *validator.Validator) {
