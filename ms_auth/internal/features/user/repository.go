@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log/slog"
 	"ms_auth/internal/core/contexts"
 	"ms_auth/internal/core/domain/apiError"
+	"ms_auth/internal/core/filters"
 	"ms_auth/pkg/sqlformat"
 
 	"github.com/google/uuid"
@@ -33,6 +35,110 @@ func parseConstraintError(err error) error {
 		return apiError.ValidationAlreadyExists("email")
 	}
 	return err
+}
+
+type repository interface {
+	FindAll(
+		ctx context.Context,
+		search string,
+		f filters.Filters,
+	) ([]*User, filters.Metadata, error)
+
+	FindById(
+		ctx context.Context,
+		id uuid.UUID,
+	) (*User, error)
+
+	FindByEmail(
+		ctx context.Context,
+		email string,
+	) (*User, error)
+
+	Insert(
+		ctx context.Context,
+		model *User,
+	) error
+
+	Update(
+		ctx context.Context,
+		model *User,
+	) error
+
+	DeleteById(
+		ctx context.Context,
+		id uuid.UUID,
+	) error
+}
+
+func (r *UserRepository) FindAll(
+	ctx context.Context,
+	search string,
+	f filters.Filters,
+) ([]*User, filters.Metadata, error) {
+	query := fmt.Sprintf(`
+        SELECT
+            count(*) OVER(),
+            id,
+			email,
+			name,
+			password_hash,
+			activated,
+			version,
+			created_at,
+			created_by,
+			updated_at,
+			updated_by
+        FROM users
+        WHERE deleted = false
+        AND (
+            name ILIKE '%%' || $1 || '%%'
+            OR email ILIKE '%%' || $1 || '%%'
+            OR $1 = ''
+        )
+        ORDER BY %s %s, id ASC
+        LIMIT $2 OFFSET $3
+    `, f.SortColumn(), f.SortDirection())
+
+	r.logger.Info("query executed", "sql", sqlformat.MinifySQL(query))
+
+	args := []any{search, f.Limit(), f.Offset()}
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, filters.Metadata{}, err
+	}
+	defer rows.Close()
+
+	totalRecords := 0
+	users := make([]*User, 0)
+
+	for rows.Next() {
+		var user User
+		err := rows.Scan(
+			&totalRecords,
+			&user.ID,
+			&user.Email,
+			&user.PasswordHash,
+			&user.Activated,
+			&user.Version,
+			&user.CreatedAt,
+			&user.CreatedBy,
+			&user.UpdatedAt,
+			&user.UpdatedBy,
+			&user.CreatedAt,
+		)
+		if err != nil {
+			return nil, filters.Metadata{}, err
+		}
+		users = append(users, &user)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, filters.Metadata{}, err
+	}
+
+	metadata := filters.CalculateMetadata(totalRecords, f.Page, f.PageSize)
+	return users, metadata, nil
 }
 
 func (r *UserRepository) FindById(
