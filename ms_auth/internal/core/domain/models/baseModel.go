@@ -7,10 +7,10 @@ import (
 )
 
 type BaseModel struct {
-	Version   int        `db:"version" repo:"version"`
-	Deleted   bool       `db:"deleted" repo:"auto"`
-	CreatedAt time.Time  `db:"created_at" repo:"auto"`
-	CreatedBy *uuid.UUID `db:"created_by" repo:"auto"`
-	UpdatedAt *time.Time `db:"updated_at" repo:"auto"`
-	UpdatedBy *uuid.UUID `db:"updated_by" repo:"auto"`
+	Version   int        `db:"version"`
+	Deleted   bool       `db:"deleted"`
+	CreatedAt time.Time  `db:"created_at"`
+	CreatedBy *uuid.UUID `db:"created_by"`
+	UpdatedAt *time.Time `db:"updated_at"`
+	UpdatedBy *uuid.UUID `db:"updated_by" `
 }
