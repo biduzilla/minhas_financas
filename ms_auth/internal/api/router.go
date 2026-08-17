@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"ms_auth/internal/core/domain/apiError"
 	"ms_auth/internal/core/metrics"
+	"ms_auth/internal/features/user"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -31,6 +32,7 @@ type errorHandler interface {
 type Router struct {
 	errHandler errorHandler
 	m          mw
+	user       *user.UserRouter
 }
 
 func NewRouter(
@@ -41,6 +43,7 @@ func NewRouter(
 	return &Router{
 		m:          m,
 		errHandler: errHandler,
+		user:       user.NewRouter(handlers.user, m),
 	}
 }
 
@@ -74,6 +77,8 @@ func (router *Router) RegisterRoutes(db *sql.DB) *chi.Mux {
 		r.Use(router.m.RateLimit)
 		r.Use(router.m.EnableCORS)
 		r.Use(router.m.Authenticate)
+
+		router.user.Routes(r)
 	})
 
 	return r

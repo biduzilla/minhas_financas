@@ -17,6 +17,43 @@ type UserService struct {
 	we         WriteExecutor
 }
 
+type userService interface {
+	SignUp(
+		ctx context.Context,
+		req CreateUserDTO,
+	) (*User, error)
+	FindAll(
+		ctx context.Context,
+		search string,
+		f filters.Filters,
+	) ([]*User, filters.Metadata, error)
+
+	FindById(
+		ctx context.Context,
+		id uuid.UUID,
+	) (*User, error)
+
+	FindByEmail(
+		ctx context.Context,
+		email string,
+	) (*User, error)
+
+	Insert(
+		ctx context.Context,
+		model *User,
+	) error
+
+	Update(
+		ctx context.Context,
+		model *User,
+	) error
+
+	DeleteById(
+		ctx context.Context,
+		id uuid.UUID,
+	) error
+}
+
 type WriteExecutor interface {
 	Execute(ctx context.Context, fn func(ctx context.Context) error) error
 }

@@ -118,6 +118,7 @@ func (r *UserRepository) FindAll(
 			&totalRecords,
 			&user.ID,
 			&user.Email,
+			&user.Name,
 			&user.PasswordHash,
 			&user.Activated,
 			&user.Version,
@@ -169,6 +170,7 @@ func (r *UserRepository) FindById(
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&model.ID,
 		&model.Email,
+		&model.Name,
 		&model.PasswordHash,
 		&model.Activated,
 		&model.Version,
@@ -215,6 +217,7 @@ func (r *UserRepository) FindByEmail(
 	err := r.db.QueryRowContext(ctx, query, email).Scan(
 		&model.ID,
 		&model.Email,
+		&model.Name,
 		&model.PasswordHash,
 		&model.Activated,
 		&model.Version,
@@ -244,7 +247,7 @@ func (r *UserRepository) Insert(
 			email,
 			name,
 			password_hash,
-			created_at,
+			created_by,
 		) values (
 			:email,
 			:name,
@@ -319,8 +322,6 @@ func (r *UserRepository) Update(
 	}
 
 	err := tx.QueryRowContext(ctx, query, args...).Scan(
-		&model.ID,
-		&model.CreatedAt,
 		&model.Version,
 	)
 

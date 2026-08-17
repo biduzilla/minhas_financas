@@ -393,3 +393,35 @@ func TestLogout_Success(t *testing.T) {
 		t.Error("RevokeAllByFamily should be called")
 	}
 }
+
+func TestLogout_TokenNotFound_Idempotent(t *testing.T) {
+	updateCalled := false
+	revokeAllCalled := false
+	repo := &mockRefreshTokenRepo{
+		findByTokenHashFn: func(ctx context.Context, tokenHash string) (*RefreshToken, error) {
+			return nil, apiError.ErrRecordNotFound
+		},
+		updateFn: func(ctx context.Context, model *RefreshToken) error {
+			updateCalled = true
+			return nil
+		},
+		revokeAllByFamilyFn: func(ctx context.Context, family uuid.UUID) error {
+			revokeAllCalled = true
+			return nil
+		},
+	}
+	jwt := &mockJWTService{}
+	users := &mockUserService{}
+
+	svc := NewService(jwt, users, repo, &mockTxManager{})
+
+	err := svc.Logout(context.Background(), "token-inexistente")
+
+	if !errors.Is(err, apiError.ErrRecordNotFound) {
+		t.Fatalf("Expected ErrRecordNotFound, got %v", err)
+	}
+
+	if updateCalled || revokeAllCalled {
+		t.Error("No repository operations should be called when token not found")
+	}
+}

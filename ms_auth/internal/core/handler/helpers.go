@@ -14,8 +14,7 @@ import (
 )
 
 type errorHandler interface {
-	ServerErrorResponse(w http.ResponseWriter, r *http.Request, err error)
-	BadRequestResponse(w http.ResponseWriter, r *http.Request, err error)
+	HandlerError(w http.ResponseWriter, r *http.Request, err error)
 }
 
 func ParseIntID(
@@ -25,7 +24,11 @@ func ParseIntID(
 ) (int64, bool) {
 	id, err := readIntPathVariable(r, "id")
 	if err != nil {
-		errRsp.BadRequestResponse(w, r, err)
+		errRsp.HandlerError(w, r, apiError.NewHTTPError(
+			err.Error(),
+			http.StatusBadRequest,
+			err,
+		))
 		return 0, false
 	}
 	return id, true
@@ -56,7 +59,11 @@ func ParseStringField(
 ) (string, bool) {
 	value, err := readStringPathVariable(r, field)
 	if err != nil {
-		errRsp.BadRequestResponse(w, r, err)
+		errRsp.HandlerError(w, r, apiError.NewHTTPError(
+			err.Error(),
+			http.StatusBadRequest,
+			err,
+		))
 		return "", false
 	}
 	return value, true
@@ -70,13 +77,21 @@ func ParseUUID(
 
 	id, err := readStringPathVariable(r, "id")
 	if err != nil {
-		errRsp.BadRequestResponse(w, r, err)
+		errRsp.HandlerError(w, r, apiError.NewHTTPError(
+			err.Error(),
+			http.StatusBadRequest,
+			err,
+		))
 		return uuid.Nil, false
 	}
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		errRsp.BadRequestResponse(w, r, err)
+		errRsp.HandlerError(w, r, apiError.NewHTTPError(
+			err.Error(),
+			http.StatusBadRequest,
+			err,
+		))
 		return uuid.Nil, false
 	}
 
@@ -93,7 +108,7 @@ func Respond(
 ) {
 	err := httpjson.WriteJSON(w, status, data, headers)
 	if err != nil {
-		errRsp.ServerErrorResponse(w, r, err)
+		errRsp.HandlerError(w, r, err)
 		return
 	}
 }
