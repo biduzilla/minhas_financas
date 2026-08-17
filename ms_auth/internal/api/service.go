@@ -6,12 +6,14 @@ import (
 	"ms_auth/internal/core/config"
 	"ms_auth/internal/core/security"
 	"ms_auth/internal/core/transaction"
+	"ms_auth/internal/features/auth"
 	"ms_auth/internal/features/user"
 )
 
 type services struct {
 	jwtService *security.JwtService
 	user       *user.UserService
+	auth       *auth.AuthService
 }
 
 func NewServices(
@@ -35,14 +37,16 @@ func NewServices(
 
 	userKeyBuilder := cache.NewKeyBuilder("user")
 	userWriteExecutor := transaction.NewWriterExecutor(tx, cacheClient, userKeyBuilder)
+	userService := user.NewService(
+		r.user,
+		cacheClient,
+		userKeyBuilder,
+		userWriteExecutor,
+	)
 
 	return &services{
 		jwtService: jwtService,
-		user: user.NewService(
-			r.user,
-			cacheClient,
-			userKeyBuilder,
-			userWriteExecutor,
-		),
+		user:       userService,
+		auth:       auth.NewService(jwtService, userService, r.auth, tx),
 	}, nil
 }

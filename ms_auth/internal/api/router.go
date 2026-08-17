@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"ms_auth/internal/core/domain/apiError"
 	"ms_auth/internal/core/metrics"
+	"ms_auth/internal/features/auth"
 	"ms_auth/internal/features/user"
 	"net/http"
 
@@ -33,6 +34,7 @@ type Router struct {
 	errHandler errorHandler
 	m          mw
 	user       *user.UserRouter
+	auth       *auth.AuthRouter
 }
 
 func NewRouter(
@@ -79,6 +81,7 @@ func (router *Router) RegisterRoutes(db *sql.DB) *chi.Mux {
 		r.Use(router.m.Authenticate)
 
 		router.user.Routes(r)
+		router.auth.Routes(r)
 	})
 
 	return r
