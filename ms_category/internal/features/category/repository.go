@@ -93,7 +93,7 @@ func (r *CategoryRepository) FindAll(
             updated_at,
             updated_by
         FROM categories
-        WHERE deleted_at IS NULL
+        WHERE deleted = false
         AND (
             name ILIKE '%%' || $1 || '%%'
             OR $1 = ''
@@ -167,7 +167,7 @@ func (r *CategoryRepository) FindById(
 			updated_by
 		from categories
 		where
-			deleted_at is null
+			deleted = false
 			and id = $1
 			and user_id = $2
 	`
@@ -266,7 +266,7 @@ func (r *CategoryRepository) Update(
 		where
 			id = :id
 			and version = :version
-			and deleted_at is null
+			and deleted = false
 		returning version
 	`
 
@@ -307,13 +307,13 @@ func (r *CategoryRepository) DeleteById(
 	query := `
 		update categories
 		set
-			deleted_at = NOW(),
+			deleted = true,
 			updated_at = NOW(),
 			updated_by = :user_id,
 			version = version + 1
 		where
 			id = :id
-			and deleted_at is null
+			and deleted = false
 			and user_id = :user_id
 	`
 

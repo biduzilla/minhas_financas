@@ -1,3 +1,6 @@
 go 1.25.0
 
-use ./ms_auth
+use (
+    ./ms_auth
+    ./ms_category
+)

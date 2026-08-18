@@ -35,11 +35,6 @@ func NewApp(cfg config.Config) *application {
 		return nil
 	}
 
-	if err := database.RunMigrations(cfg.DB.DSN, logger); err != nil {
-		logger.Error("failed to run migrations", "error", err)
-		return nil
-	}
-
 	logger.Info("database connection pool established")
 
 	expvar.NewString("version").Set(version)
