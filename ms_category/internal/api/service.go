@@ -6,10 +6,12 @@ import (
 	"ms_category/internal/core/config"
 	"ms_category/internal/core/security"
 	"ms_category/internal/core/transaction"
+	"ms_category/internal/features/category"
 )
 
 type services struct {
 	jwtService *security.JwtService
+	category   *category.CategoryService
 }
 
 func NewServices(
@@ -26,5 +28,22 @@ func NewServices(
 
 	logger.Info("reddis connection pool established")
 
-	return &services{}, nil
+	jwtService, err := security.NewService(config)
+	if err != nil {
+		return nil, err
+	}
+
+	categoryKeyBuilder := cache.NewKeyBuilder("categories")
+	categoryWriteExecutor := transaction.NewWriterExecutor(tx, cacheClient, categoryKeyBuilder)
+	categoryService := category.NewService(
+		r.category,
+		cacheClient,
+		categoryKeyBuilder,
+		categoryWriteExecutor,
+	)
+
+	return &services{
+		jwtService: jwtService,
+		category:   categoryService,
+	}, nil
 }

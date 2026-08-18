@@ -92,6 +92,7 @@ func ParseCategoryType(s string) (CategoryType, error) {
 }
 
 func (m *Category) Validate(v *validator.Validator) {
+	v.Check(m.UserID != uuid.Nil, "user_id", "must be provided")
 	v.Check(m.Name != "", "name", "must be provided")
 	v.Check(len(m.Name) >= 3, "name", "must be at least 3 characters long")
 	v.Check(len(m.Name) <= 100, "name", "must not be more than 100 characters long")

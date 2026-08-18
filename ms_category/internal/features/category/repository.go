@@ -58,8 +58,6 @@ type repository interface {
 	) error
 }
 
-// parseConstraintError converte violações de unicidade em erro de validação.
-// Ajuste o nome da constraint conforme definido no banco.
 func parseConstraintError(err error) error {
 	if pqErr, ok := err.(*pq.Error); ok {
 		switch pqErr.Constraint {
@@ -70,7 +68,6 @@ func parseConstraintError(err error) error {
 	return err
 }
 
-// scanType converte o texto do banco para CategoryType.
 func scanType(s string) (CategoryType, error) {
 	return ParseCategoryType(s)
 }
@@ -80,6 +77,8 @@ func (r *CategoryRepository) FindAll(
 	search string,
 	f filters.Filters,
 ) ([]*Category, filters.Metadata, error) {
+	userAuth := contexts.GetUser(ctx)
+
 	query := fmt.Sprintf(`
         SELECT
             count(*) OVER(),
@@ -99,13 +98,14 @@ func (r *CategoryRepository) FindAll(
             name ILIKE '%%' || $1 || '%%'
             OR $1 = ''
         )
+		and user_id = $4
         ORDER BY %s %s, id ASC
         LIMIT $2 OFFSET $3
     `, f.SortColumn(), f.SortDirection())
 
 	r.logger.Info("query executed", "sql", sqlformat.MinifySQL(query))
 
-	args := []any{search, f.Limit(), f.Offset()}
+	args := []any{search, f.Limit(), f.Offset(), userAuth.GetID()}
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
@@ -118,14 +118,13 @@ func (r *CategoryRepository) FindAll(
 
 	for rows.Next() {
 		var model Category
-		var typeStr string
 
 		err := rows.Scan(
 			&totalRecords,
 			&model.ID,
 			&model.UserID,
 			&model.Name,
-			&typeStr,
+			&model.Type,
 			&model.GoalID,
 			&model.Version,
 			&model.CreatedAt,
@@ -133,11 +132,6 @@ func (r *CategoryRepository) FindAll(
 			&model.UpdatedAt,
 			&model.UpdatedBy,
 		)
-		if err != nil {
-			return nil, filters.Metadata{}, err
-		}
-
-		model.Type, err = scanType(typeStr)
 		if err != nil {
 			return nil, filters.Metadata{}, err
 		}
@@ -157,6 +151,8 @@ func (r *CategoryRepository) FindById(
 	ctx context.Context,
 	id uuid.UUID,
 ) (*Category, error) {
+	userAuth := contexts.GetUser(ctx)
+
 	query := `
 		select
 			id,
@@ -173,18 +169,18 @@ func (r *CategoryRepository) FindById(
 		where
 			deleted_at is null
 			and id = $1
+			and user_id = $2
 	`
 
 	r.logger.Info("query executed", "sql", sqlformat.MinifySQL(query))
 
 	var model Category
-	var typeStr string
 
-	err := r.db.QueryRowContext(ctx, query, id).Scan(
+	err := r.db.QueryRowContext(ctx, query, id, userAuth.GetID()).Scan(
 		&model.ID,
 		&model.UserID,
 		&model.Name,
-		&typeStr,
+		&model.Type,
 		&model.GoalID,
 		&model.Version,
 		&model.CreatedAt,
@@ -196,11 +192,6 @@ func (r *CategoryRepository) FindById(
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, apiError.ErrRecordNotFound
 		}
-		return nil, err
-	}
-
-	model.Type, err = scanType(typeStr)
-	if err != nil {
 		return nil, err
 	}
 
@@ -232,7 +223,7 @@ func (r *CategoryRepository) Insert(
 	params := map[string]any{
 		"user_id":    userAuth.GetID(),
 		"name":       model.Name,
-		"type":       model.Type.String(),
+		"type":       model.Type,
 		"goal_id":    model.GoalID,
 		"created_by": userAuth.GetID(),
 	}
@@ -281,7 +272,7 @@ func (r *CategoryRepository) Update(
 
 	params := map[string]any{
 		"name":    model.Name,
-		"type":    model.Type.String(),
+		"type":    model.Type,
 		"goal_id": model.GoalID,
 		"id":      model.ID,
 		"version": model.Version,
@@ -323,6 +314,7 @@ func (r *CategoryRepository) DeleteById(
 		where
 			id = :id
 			and deleted_at is null
+			and user_id = :user_id
 	`
 
 	params := map[string]any{

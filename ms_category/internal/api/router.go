@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"ms_category/internal/core/domain/apiError"
 	"ms_category/internal/core/metrics"
+	"ms_category/internal/features/category"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -31,6 +32,7 @@ type errorHandler interface {
 type Router struct {
 	errHandler errorHandler
 	m          mw
+	category   *category.CategoryRouter
 }
 
 func NewRouter(
@@ -41,6 +43,7 @@ func NewRouter(
 	return &Router{
 		m:          m,
 		errHandler: errHandler,
+		category:   category.NewRouter(handlers.category, m),
 	}
 }
 
@@ -75,6 +78,7 @@ func (router *Router) RegisterRoutes(db *sql.DB) *chi.Mux {
 		r.Use(router.m.EnableCORS)
 		r.Use(router.m.Authenticate)
 
+		router.category.Routes(r)
 	})
 
 	return r
