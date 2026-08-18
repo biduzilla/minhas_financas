@@ -1,0 +1,176 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: go_postgres_minhas_financas
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_minhas_financas_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - api_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: go_redis_minhas_financas
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    env_file: .env
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis_minhas_financas_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli --no-auth-warning -a ${REDIS_PASSWORD} ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - api_network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: go_prometheus_minhas_financas
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    networks:
+      - api_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: go_grafana_minhas_financas
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - api_network
+
+  kafka:
+    container_name: kafka_minhas_financas
+    image: apache/kafka:latest
+    ports:
+      - "${KAFKA_PORT_INTERNAL}:${KAFKA_PORT_INTERNAL}"  # Internal listener (Docker network)
+      - "${KAFKA_PORT_EXTERNAL}:${KAFKA_PORT_EXTERNAL}"  # External listener (host machine)
+
+    environment:
+      ############################################
+      # KRaft Metadata & Node Identity
+      ############################################
+      # Unique ID for this Kafka node
+      KAFKA_NODE_ID: 1
+      # Unique Kafka cluster identifier (required for KRaft mode)
+      KAFKA_CLUSTER_ID: 'minhas_financas-go-cluster-1'
+      # Node roles — this instance will act as BOTH a broker and controller
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+
+      ############################################
+      # Controller Quorum Configuration (Raft)
+      ############################################
+      # List of controller nodes that form the Raft quorum
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:9093'
+      # Listener name used by controllers for internal Raft communication
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+
+      ############################################
+      # Network Listeners (Internal, External & Controller)
+      ############################################
+      # Define all listener endpoints for this Kafka node
+      KAFKA_LISTENERS: >
+        PLAINTEXT://0.0.0.0:9092,
+        EXTERNAL://0.0.0.0:9094,
+        CONTROLLER://0.0.0.0:9093
+
+      # What each listener advertises to connecting clients
+      # Internal (Docker containers): kafka:9092
+      # External (host machine): localhost:9094
+      KAFKA_ADVERTISED_LISTENERS: >
+        PLAINTEXT://kafka:9092,
+        EXTERNAL://localhost:9094
+
+      # Maps listener names to their security protocols
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: >
+        CONTROLLER:PLAINTEXT,
+        PLAINTEXT:PLAINTEXT,
+        EXTERNAL:PLAINTEXT
+
+      # Which listener brokers should use for internal communication
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+
+      ############################################
+      #  Single-Node Cluster Safety Settings
+      #    (because replication >1 would break)
+      ############################################
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+      ############################################
+      #  Broker Defaults & Quality-of-Life Settings
+      ############################################
+      # Speed up consumer group startup
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      # Auto-create topics if they don't already exist
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      # Default number of partitions per topic
+      KAFKA_NUM_PARTITIONS: 1
+
+    volumes:
+      - ./docker/kafka_data:/var/lib/kafka/data
+    networks:
+      - api_network
+
+  kafka-ui:
+    container_name: kafka-ui_minhas_financas
+    image: ghcr.io/kafbat/kafka-ui:latest
+    ports:
+      - "${KAFKA_PORT_UI}:8080"
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:${KAFKA_PORT_INTERNAL}  # Use internal Docker network name
+      DYNAMIC_CONFIG_ENABLED: 'true'
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.54
+    container_name: jaeger_minhas_financas
+    ports:
+      - "${JAEGER_PORT_UI}:${JAEGER_PORT_UI}"
+      - "${JAEGER_PORT}:${JAEGER_PORT}"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - api_network   
+
+volumes:
+  postgres_minhas_financas_data:
+  redis_minhas_financas_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  api_network:
+    driver: bridge

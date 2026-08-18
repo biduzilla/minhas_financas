@@ -31,7 +31,7 @@ func NewRepository(
 }
 
 func parseConstraintError(err error) error {
-	if pqErr, ok := err.(*pq.Error); ok && pqErr.Constraint == "uniq_email" {
+	if pqErr, ok := err.(*pq.Error); ok && pqErr.Constraint == "users_email_key" {
 		return apiError.ValidationAlreadyExists("email")
 	}
 	return err
@@ -126,7 +126,6 @@ func (r *UserRepository) FindAll(
 			&user.CreatedBy,
 			&user.UpdatedAt,
 			&user.UpdatedBy,
-			&user.CreatedAt,
 		)
 		if err != nil {
 			return nil, filters.Metadata{}, err
@@ -247,12 +246,12 @@ func (r *UserRepository) Insert(
 			email,
 			name,
 			password_hash,
-			created_by,
+			created_by
 		) values (
 			:email,
 			:name,
 			:password_hash,
-			:created_by,
+			:created_by
 		) returning id, created_at, version
 	`
 

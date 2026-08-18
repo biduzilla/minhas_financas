@@ -100,7 +100,7 @@ func newValidUser() *User {
 func newValidSignUpDTO() CreateUserDTO {
 	return CreateUserDTO{
 		Email:    "joao@empresa.com",
-		Password: []byte("senha123A"),
+		Password: "senha123A",
 		Name:     "João",
 	}
 }
@@ -133,7 +133,7 @@ func TestSignUp_Sucess(t *testing.T) {
 
 func TestSignUp_InvalidPassword_MissingLetter(t *testing.T) {
 	req := newValidSignUpDTO()
-	req.Password = []byte("12345678")
+	req.Password = "12345678"
 
 	insertCalled := false
 	repo := &mockUserRepo{
@@ -157,7 +157,7 @@ func TestSignUp_InvalidPassword_MissingLetter(t *testing.T) {
 
 func TestSignUp_InvalidPassword_MissingDigit(t *testing.T) {
 	req := newValidSignUpDTO()
-	req.Password = []byte("abcdefgh")
+	req.Password = "abcdefgh"
 
 	repo := &mockUserRepo{
 		insertFn: func(ctx context.Context, model *User) error {

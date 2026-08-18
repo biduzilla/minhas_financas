@@ -124,16 +124,18 @@ func (r *RefreshTokenRepository) RevokeAllByFamily(
 		panic("transaction necessary for this operation")
 	}
 
-	var qty int
-	err := tx.QueryRowContext(ctx, query, family, userAuth.GetID()).Scan(
-		&qty,
-	)
-
+	result, err := tx.ExecContext(ctx, query, family, userAuth.GetID())
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return apiError.ErrEditConflict
-		}
 		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return nil
 	}
 
 	return nil
@@ -152,14 +154,14 @@ func (r *RefreshTokenRepository) Insert(
 			expires_at,
 			family,
 			revoked,
-			created_by,
+			created_by
 		) values (
 			:token_hash,
 			:user_id,
 			:expires_at,
 			:family,
 			:revoked,
-			:created_by,
+			:created_by
 		) returning id, created_at, version
 	`
 

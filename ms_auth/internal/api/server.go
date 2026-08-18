@@ -38,6 +38,9 @@ func (app *application) Server() error {
 	}()
 
 	deps, err := app.buildDependencies(shutdown)
+	if err != nil {
+		return err
+	}
 
 	mux := deps.routers.RegisterRoutes(app.db)
 	instrumentedHandler := otelhttp.NewHandler(mux, "ms_auth")

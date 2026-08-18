@@ -195,7 +195,9 @@ func (s *AuthService) saveRefreshToken(
 		Revoked:   false,
 	}
 
-	return s.refreshTokenRepo.Insert(ctx, entity)
+	return s.tx.RunInTx(ctx, func(ctx context.Context) error {
+		return s.refreshTokenRepo.Insert(ctx, entity)
+	})
 }
 
 func hashToken(token string) string {

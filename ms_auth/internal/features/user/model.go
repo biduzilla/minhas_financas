@@ -21,7 +21,7 @@ type User struct {
 
 type CreateUserDTO struct {
 	Email    string `json:"email"`
-	Password []byte `json:"password"`
+	Password string `json:"password"`
 	Name     string `json:"name"`
 }
 

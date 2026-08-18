@@ -14,9 +14,9 @@ import (
 )
 
 func InitTracer(serviceName string, logger *slog.Logger) (func(context.Context) error, error) {
-	exp, err := otlptracehttp.New(context.Background())
+	exp, err := otlptracehttp.New(context.Background(), otlptracehttp.WithInsecure())
 	if err != nil {
-		return nil, fmt.Errorf("criando exportador OTLP HTTP: %w", err)
+		return nil, fmt.Errorf("error ao criar exportador OTLP HTTP: %w", err)
 	}
 
 	tp := sdktrace.NewTracerProvider(
