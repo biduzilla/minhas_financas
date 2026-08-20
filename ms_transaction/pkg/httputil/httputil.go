@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"ms_transaction/internal/core/validator"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+	"uuid"
 )
 
 func ReadStringParam(r *http.Request, key, defaultValue string) string {
@@ -18,6 +20,38 @@ func ReadStringParam(r *http.Request, key, defaultValue string) string {
 		return defaultValue
 	}
 	return s
+}
+
+func ReadDateParam(r *http.Request, key string, v *validator.Validator) *time.Time {
+	value := ReadStringParam(r, key, "")
+
+	if value == "" {
+		return nil
+	}
+
+	date, err := time.Parse("2006-01-02", value)
+	if err != nil {
+		v.AddError(key, "must be a valid date (YYYY-MM-DD)")
+		return nil
+	}
+
+	return &date
+}
+
+func ReadUUIDParam(r *http.Request, key string, v *validator.Validator) uuid.UUID {
+	value := ReadStringParam(r, key, "")
+
+	if value == "" {
+		return uuid.Nil()
+	}
+
+	id, err := uuid.Parse(value)
+	if err != nil {
+		v.AddError(key, "must be a valid uuid")
+		return uuid.Nil()
+	}
+
+	return id
 }
 
 type IntValidator interface {

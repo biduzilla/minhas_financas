@@ -1,6 +1,7 @@
 package transactions
 
 import (
+	"fmt"
 	"ms_transaction/internal/core/domain/models"
 	"ms_transaction/internal/core/validator"
 	"time"
@@ -65,9 +66,20 @@ func (m *Transaction) Validate(v *validator.Validator) {
 	v.Check(len(m.Description) <= 100, "description", "must not be more than 100 characters long")
 }
 
-type CategoryType int
+type categoryType int
 
 const (
-	CategoryTypeInput CategoryType = iota
-	CategoryTypeOutput
+	categoryTypeInput categoryType = iota
+	categoryTypeOutput
 )
+
+func parseCategoryType(s string) (categoryType, error) {
+	switch s {
+	case "input":
+		return categoryTypeInput, nil
+	case "output":
+		return categoryTypeOutput, nil
+	default:
+		return 0, fmt.Errorf("invalid category type: %s", s)
+	}
+}

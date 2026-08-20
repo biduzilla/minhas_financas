@@ -2,13 +2,16 @@ package api
 
 import (
 	"log/slog"
+	"ms_transaction/internal/core/cache"
 	"ms_transaction/internal/core/config"
 	"ms_transaction/internal/core/security"
 	"ms_transaction/internal/core/transaction"
+	"ms_transaction/internal/features/transactions"
 )
 
 type services struct {
-	jwtService *security.JwtService
+	jwtService  *security.JwtService
+	transaction *transactions.TransactionService
 }
 
 func NewServices(
@@ -17,11 +20,11 @@ func NewServices(
 	config config.Config,
 	logger *slog.Logger,
 ) (*services, error) {
-	// cacheClient, err := cache.NewRedisCache(config.Cache.Addr, config.Cache.Password, config.Cache.Db, nil)
+	cacheClient, err := cache.NewRedisCache(config.Cache.Addr, config.Cache.Password, config.Cache.Db, nil)
 
-	// if err != nil {
-	// 	return nil, err
-	// }
+	if err != nil {
+		return nil, err
+	}
 
 	logger.Info("reddis connection pool established")
 
@@ -30,7 +33,17 @@ func NewServices(
 		return nil, err
 	}
 
+	transactionKeyBuilder := cache.NewKeyBuilder("transactions")
+	transactionWriteExecutor := transaction.NewWriterExecutor(tx, cacheClient, transactionKeyBuilder)
+	transactionService := transactions.NewService(
+		r.transaction,
+		cacheClient,
+		transactionKeyBuilder,
+		transactionWriteExecutor,
+	)
+
 	return &services{
-		jwtService: jwtService,
+		jwtService:  jwtService,
+		transaction: transactionService,
 	}, nil
 }

@@ -34,7 +34,7 @@ func NewRepository(
 type transactionQuery struct {
 	StartDate  *time.Time
 	EndDate    *time.Time
-	Type       *CategoryType
+	Type       *categoryType
 	CategoryID uuid.UUID
 	Filters    filters.Filters
 }

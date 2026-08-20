@@ -10,10 +10,11 @@ import (
 
 func main() {
 	// cfg := config.New()
-	cfg := config.Config{}
-	cfg.Env = "development"
+	cfg := config.Config{
+		Env: "development",
+	}
 
-	cfg.Server.Port = 4002
+	cfg.Server.Port = 4003
 	cfg.Server.Timeout = 5 * time.Second
 
 	cfg.DB.DSN = "postgres://api_user:api_password@localhost:5432/api_db?sslmode=disable"

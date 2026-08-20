@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"ms_transaction/internal/core/domain/apiError"
 	"ms_transaction/internal/core/metrics"
+	"ms_transaction/internal/features/transactions"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -29,8 +30,9 @@ type errorHandler interface {
 }
 
 type Router struct {
-	errHandler errorHandler
-	m          mw
+	errHandler  errorHandler
+	m           mw
+	transaction *transactions.TransactionRouter
 }
 
 func NewRouter(
@@ -39,8 +41,9 @@ func NewRouter(
 	m mw,
 ) *Router {
 	return &Router{
-		m:          m,
-		errHandler: errHandler,
+		m:           m,
+		errHandler:  errHandler,
+		transaction: transactions.NewRouter(handlers.transaction, m),
 	}
 }
 
@@ -75,6 +78,7 @@ func (router *Router) RegisterRoutes(db *sql.DB) *chi.Mux {
 		r.Use(router.m.EnableCORS)
 		r.Use(router.m.Authenticate)
 
+		router.transaction.Routes(r)
 	})
 
 	return r
