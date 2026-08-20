@@ -1,6 +1,6 @@
 module ms_category
 
-go 1.25.0
+go 1.27.0
 
 require go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.70.0
 
