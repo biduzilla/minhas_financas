@@ -3,4 +3,6 @@ go 1.27.0
 use (
     ./ms_auth
     ./ms_category
+    ./ms_transaction
+    ./ms_goal
 )

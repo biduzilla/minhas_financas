@@ -1,0 +1,143 @@
+package goal
+
+import (
+	"context"
+	"ms_goal/internal/core/cache"
+	"ms_goal/internal/core/domain/apiError"
+	"ms_goal/internal/core/filters"
+	"ms_goal/internal/core/validator"
+	"uuid"
+)
+
+type GoalService struct {
+	repo       repository
+	cache      cache.Cache
+	keyBuilder cache.KeyBuilder
+	we         WriteExecutor
+}
+
+type WriteExecutor interface {
+	Execute(ctx context.Context, fn func(ctx context.Context) error) error
+}
+
+type service interface {
+	FindByID(
+		ctx context.Context,
+		id uuid.UUID,
+	) (*Goal, error)
+
+	FindAll(
+		ctx context.Context,
+		search string,
+		status GoalStatus,
+		f filters.Filters,
+	) ([]*Goal, filters.Metadata, error)
+
+	Insert(
+		ctx context.Context,
+		model *Goal,
+	) error
+
+	Update(
+		ctx context.Context,
+		model *Goal,
+	) error
+
+	DeleteById(
+		ctx context.Context,
+		id uuid.UUID,
+	) error
+}
+
+func NewService(
+	repo repository,
+	cache cache.Cache,
+	keyBuilder cache.KeyBuilder,
+	we WriteExecutor,
+) *GoalService {
+	return &GoalService{
+		repo:       repo,
+		cache:      cache,
+		keyBuilder: keyBuilder,
+		we:         we,
+	}
+}
+
+func (s *GoalService) FindByID(
+	ctx context.Context,
+	id uuid.UUID,
+) (*Goal, error) {
+	key := s.keyBuilder.BuildItemKey(id.String())
+
+	return cache.FetchOrCache(ctx, s.cache, key, func() (*Goal, error) {
+		return s.repo.FindByID(ctx, id)
+	})
+}
+
+func (s *GoalService) FindAll(
+	ctx context.Context,
+	search string,
+	status GoalStatus,
+	f filters.Filters,
+) ([]*Goal, filters.Metadata, error) {
+	key := s.keyBuilder.BuildListKey(search, status, f.Page, f.PageSize, f.Sort)
+	type listPayload struct {
+		Models   []*Goal
+		Metadata filters.Metadata
+	}
+
+	payload, err := cache.FetchOrCache(ctx, s.cache, key, func() (listPayload, error) {
+		models, meta, err := s.repo.FindAll(ctx, search, status, f)
+		if err != nil {
+			return listPayload{}, err
+		}
+
+		return listPayload{
+			Models:   models,
+			Metadata: meta,
+		}, nil
+	})
+
+	if err != nil {
+		return nil, filters.Metadata{}, err
+	}
+
+	return payload.Models, payload.Metadata, nil
+}
+
+func (s *GoalService) Insert(
+	ctx context.Context,
+	model *Goal,
+) error {
+	v := validator.New()
+	if model.Validate(v); !v.Valid() {
+		return apiError.NewValidationError(v.Errors)
+	}
+
+	return s.we.Execute(ctx, func(ctx context.Context) error {
+		return s.repo.Insert(ctx, model)
+	})
+}
+
+func (s *GoalService) Update(
+	ctx context.Context,
+	model *Goal,
+) error {
+	v := validator.New()
+	if model.Validate(v); !v.Valid() {
+		return apiError.NewValidationError(v.Errors)
+	}
+
+	return s.we.Execute(ctx, func(ctx context.Context) error {
+		return s.repo.Update(ctx, model)
+	})
+}
+
+func (s *GoalService) DeleteById(
+	ctx context.Context,
+	id uuid.UUID,
+) error {
+	return s.we.Execute(ctx, func(ctx context.Context) error {
+		return s.repo.DeleteById(ctx, id)
+	})
+}
