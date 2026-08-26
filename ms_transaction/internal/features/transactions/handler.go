@@ -53,7 +53,7 @@ func (h *TransactionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	model := dto.ToModel()
 	span.SetAttributes(
 		attribute.String("transaction.category_id", model.CategoryID.String()),
-		attribute.Int64("transaction.amount", model.Amount),
+		attribute.Float64("transaction.amount", model.Amount),
 	)
 
 	if err := h.service.Insert(ctx, model); err != nil {

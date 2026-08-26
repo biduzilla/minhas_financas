@@ -12,7 +12,7 @@ type Transaction struct {
 	models.BaseModel
 	ID          uuid.UUID
 	UserID      uuid.UUID
-	Amount      int64
+	Amount      float64
 	CategoryID  uuid.UUID
 	Description string
 }
@@ -20,7 +20,7 @@ type Transaction struct {
 type TransactionDTO struct {
 	models.BaseModel
 	ID          *uuid.UUID `json:"id"`
-	Amount      *int64     `json:"amount"`
+	Amount      *float64   `json:"amount"`
 	CategoryID  *uuid.UUID `json:"category_id"`
 	Description *string    `json:"description"`
 	Version     *int       `json:"version"`

@@ -210,6 +210,12 @@ func NewHTTPError(message string, code int, err error) *HTTPError {
 	}
 }
 
+func NewBadRequestError(err error) *HTTPError {
+	return NewHTTPError(
+		err.Error(), http.StatusBadRequest, err,
+	)
+}
+
 func (e *ErrorHandler) FailedValidationResponse(w http.ResponseWriter, r *http.Request, fieldErrors map[string]string) {
 	payload := map[string]any{
 		"path":    r.URL.Path,

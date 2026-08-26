@@ -5,6 +5,7 @@ import (
 	"ms_goal/internal/core/cache"
 	"ms_goal/internal/core/domain/apiError"
 	"ms_goal/internal/core/filters"
+	"ms_goal/internal/core/messaging/events"
 	"ms_goal/internal/core/validator"
 	"uuid"
 )
@@ -14,6 +15,19 @@ type GoalService struct {
 	cache      cache.Cache
 	keyBuilder cache.KeyBuilder
 	we         WriteExecutor
+	producers  goalProducer
+}
+
+type goalProducer interface {
+	PublishGoalCreated(
+		ctx context.Context,
+		event events.GoalEvent,
+	) error
+
+	PublishGoalDeleted(
+		ctx context.Context,
+		event events.GoalEvent,
+	) error
 }
 
 type WriteExecutor interface {
@@ -54,12 +68,14 @@ func NewService(
 	cache cache.Cache,
 	keyBuilder cache.KeyBuilder,
 	we WriteExecutor,
+	producers goalProducer,
 ) *GoalService {
 	return &GoalService{
 		repo:       repo,
 		cache:      cache,
 		keyBuilder: keyBuilder,
 		we:         we,
+		producers:  producers,
 	}
 }
 
@@ -114,9 +130,16 @@ func (s *GoalService) Insert(
 		return apiError.NewValidationError(v.Errors)
 	}
 
-	return s.we.Execute(ctx, func(ctx context.Context) error {
+	err := s.we.Execute(ctx, func(ctx context.Context) error {
 		return s.repo.Insert(ctx, model)
 	})
+	if err != nil {
+		return err
+	}
+
+	return s.producers.PublishGoalCreated(ctx, *events.NewGoalEvent(
+		model.ID, model.Name,
+	))
 }
 
 func (s *GoalService) Update(
@@ -137,7 +160,12 @@ func (s *GoalService) DeleteById(
 	ctx context.Context,
 	id uuid.UUID,
 ) error {
-	return s.we.Execute(ctx, func(ctx context.Context) error {
+	err := s.we.Execute(ctx, func(ctx context.Context) error {
 		return s.repo.DeleteById(ctx, id)
 	})
+	if err != nil {
+		return err
+	}
+
+	return s.producers.PublishGoalDeleted(ctx, *events.NewGoalEvent(id, ""))
 }
