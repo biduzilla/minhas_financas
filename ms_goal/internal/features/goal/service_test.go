@@ -124,6 +124,17 @@ func (m *mockGoalProducer) PublishGoalDeleted(ctx context.Context, event events.
 	return m.publishDeletedErr
 }
 
+type mockGoalTransactionService struct {
+	deleteByGoalIdFn func(ctx context.Context, goalId uuid.UUID) error
+}
+
+func (m *mockGoalTransactionService) DeleteByGoalId(ctx context.Context, goalId uuid.UUID) error {
+	if m.deleteByGoalIdFn != nil {
+		return m.deleteByGoalIdFn(ctx, goalId)
+	}
+	return nil
+}
+
 func newValidGoal() *Goal {
 	deadline := time.Now().AddDate(0, 1, 0)
 	return &Goal{
@@ -143,8 +154,9 @@ func newTestService(
 	kb *mockKeyBuilder,
 	we *mockWriteExecutor,
 	producer *mockGoalProducer,
+	gtService *mockGoalTransactionService,
 ) *GoalService {
-	return NewService(repo, cacheMock, kb, we, producer)
+	return NewService(repo, cacheMock, kb, we, producer, gtService)
 }
 
 func TestFindByID_Success_FromDB(t *testing.T) {
@@ -163,7 +175,7 @@ func TestFindByID_Success_FromDB(t *testing.T) {
 	we := &mockWriteExecutor{}
 	producer := &mockGoalProducer{}
 
-	svc := newTestService(repo, cacheMock, kb, we, producer)
+	svc := newTestService(repo, cacheMock, kb, we, producer, &mockGoalTransactionService{})
 
 	result, err := svc.FindByID(context.Background(), goal.ID)
 
@@ -190,7 +202,7 @@ func TestFindByID_NotFound(t *testing.T) {
 	we := &mockWriteExecutor{}
 	producer := &mockGoalProducer{}
 
-	svc := newTestService(repo, cacheMock, kb, we, producer)
+	svc := newTestService(repo, cacheMock, kb, we, producer, &mockGoalTransactionService{})
 
 	_, err := svc.FindByID(context.Background(), uuid.New())
 
@@ -216,7 +228,7 @@ func TestFindAll_Success_FromDB(t *testing.T) {
 	we := &mockWriteExecutor{}
 	producer := &mockGoalProducer{}
 
-	svc := newTestService(repo, cacheMock, kb, we, producer)
+	svc := newTestService(repo, cacheMock, kb, we, producer, &mockGoalTransactionService{})
 
 	resultGoals, meta, err := svc.FindAll(context.Background(), "", GoalStatusInProgress, filters.Filters{Page: 1, PageSize: 10, Sort: "id"})
 
@@ -246,7 +258,7 @@ func TestFindAll_Error(t *testing.T) {
 	we := &mockWriteExecutor{}
 	producer := &mockGoalProducer{}
 
-	svc := newTestService(repo, cacheMock, kb, we, producer)
+	svc := newTestService(repo, cacheMock, kb, we, producer, &mockGoalTransactionService{})
 
 	_, _, err := svc.FindAll(context.Background(), "", GoalStatusInProgress, filters.Filters{Page: 1, PageSize: 10, Sort: "id"})
 
@@ -271,7 +283,7 @@ func TestInsert_ValidationFailure(t *testing.T) {
 	we := &mockWriteExecutor{}
 	producer := &mockGoalProducer{}
 
-	svc := newTestService(repo, cacheMock, kb, we, producer)
+	svc := newTestService(repo, cacheMock, kb, we, producer, &mockGoalTransactionService{})
 
 	err := svc.Insert(context.Background(), invalidGoal)
 
@@ -297,7 +309,7 @@ func TestInsert_Success_AndPublishesEvent(t *testing.T) {
 	we := &mockWriteExecutor{}
 	producer := &mockGoalProducer{}
 
-	svc := newTestService(repo, cacheMock, kb, we, producer)
+	svc := newTestService(repo, cacheMock, kb, we, producer, &mockGoalTransactionService{})
 
 	err := svc.Insert(context.Background(), goal)
 
@@ -332,7 +344,7 @@ func TestUpdate_ValidationFailure(t *testing.T) {
 	we := &mockWriteExecutor{}
 	producer := &mockGoalProducer{}
 
-	svc := newTestService(repo, cacheMock, kb, we, producer)
+	svc := newTestService(repo, cacheMock, kb, we, producer, &mockGoalTransactionService{})
 
 	err := svc.Update(context.Background(), goal)
 
@@ -358,7 +370,7 @@ func TestUpdate_Success(t *testing.T) {
 	we := &mockWriteExecutor{}
 	producer := &mockGoalProducer{}
 
-	svc := newTestService(repo, cacheMock, kb, we, producer)
+	svc := newTestService(repo, cacheMock, kb, we, producer, &mockGoalTransactionService{})
 
 	err := svc.Update(context.Background(), goal)
 
@@ -373,9 +385,17 @@ func TestUpdate_Success(t *testing.T) {
 func TestDeleteById_Success_AndPublishesEvent(t *testing.T) {
 	id := uuid.New()
 	deleteCalled := false
+	deleteByGoalIdCalled := false
+
 	repo := &mockGoalRepo{
 		deleteFn: func(ctx context.Context, goalId uuid.UUID) error {
 			deleteCalled = true
+			return nil
+		},
+	}
+	gtService := &mockGoalTransactionService{
+		deleteByGoalIdFn: func(ctx context.Context, goalId uuid.UUID) error {
+			deleteByGoalIdCalled = true
 			return nil
 		},
 	}
@@ -384,7 +404,7 @@ func TestDeleteById_Success_AndPublishesEvent(t *testing.T) {
 	we := &mockWriteExecutor{}
 	producer := &mockGoalProducer{}
 
-	svc := newTestService(repo, cacheMock, kb, we, producer)
+	svc := newTestService(repo, cacheMock, kb, we, producer, gtService)
 
 	err := svc.DeleteById(context.Background(), id)
 
@@ -394,6 +414,9 @@ func TestDeleteById_Success_AndPublishesEvent(t *testing.T) {
 	if !deleteCalled {
 		t.Error("DeleteById was not called")
 	}
+	if !deleteByGoalIdCalled {
+		t.Error("DeleteByGoalId was not called")
+	}
 	if producer.deletedEvent == nil {
 		t.Fatal("Expected PublishGoalDeleted to be called")
 	}
@@ -402,10 +425,16 @@ func TestDeleteById_Success_AndPublishesEvent(t *testing.T) {
 	}
 }
 
-func TestDeleteById_Error(t *testing.T) {
+func TestDeleteById_ErrorFromGoalTransactionService(t *testing.T) {
+	id := uuid.New()
 	repo := &mockGoalRepo{
-		deleteFn: func(ctx context.Context, id uuid.UUID) error {
-			return apiError.ErrRecordNotFound
+		deleteFn: func(ctx context.Context, goalId uuid.UUID) error {
+			return nil
+		},
+	}
+	gtService := &mockGoalTransactionService{
+		deleteByGoalIdFn: func(ctx context.Context, goalId uuid.UUID) error {
+			return errors.New("failed to delete goal transactions")
 		},
 	}
 	cacheMock := &mockCache{}
@@ -413,14 +442,14 @@ func TestDeleteById_Error(t *testing.T) {
 	we := &mockWriteExecutor{}
 	producer := &mockGoalProducer{}
 
-	svc := newTestService(repo, cacheMock, kb, we, producer)
+	svc := newTestService(repo, cacheMock, kb, we, producer, gtService)
 
-	err := svc.DeleteById(context.Background(), uuid.New())
+	err := svc.DeleteById(context.Background(), id)
 
-	if !errors.Is(err, apiError.ErrRecordNotFound) {
-		t.Errorf("Expected ErrRecordNotFound, got %v", err)
+	if err == nil {
+		t.Fatal("Expected error")
 	}
 	if producer.deletedEvent != nil {
-		t.Error("PublishGoalDeleted should NOT be called on error")
+		t.Error("PublishGoalDeleted should NOT be called if DeleteByGoalId fails")
 	}
 }

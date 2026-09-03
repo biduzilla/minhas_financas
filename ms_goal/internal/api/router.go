@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"ms_goal/internal/core/domain/apiError"
 	"ms_goal/internal/core/metrics"
+	"ms_goal/internal/features/goal"
+	goaltransaction "ms_goal/internal/features/goal_transaction"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -29,8 +31,10 @@ type errorHandler interface {
 }
 
 type Router struct {
-	errHandler errorHandler
-	m          mw
+	errHandler      errorHandler
+	m               mw
+	goal            *goal.GoalRouter
+	goalTransaction *goaltransaction.GoalTransactionRouter
 }
 
 func NewRouter(
@@ -39,8 +43,10 @@ func NewRouter(
 	m mw,
 ) *Router {
 	return &Router{
-		m:          m,
-		errHandler: errHandler,
+		m:               m,
+		errHandler:      errHandler,
+		goal:            goal.NewRouter(handlers.goal, m),
+		goalTransaction: goaltransaction.NewRouter(handlers.goalTransaction, m),
 	}
 }
 
@@ -75,6 +81,8 @@ func (router *Router) RegisterRoutes(db *sql.DB) *chi.Mux {
 		r.Use(router.m.EnableCORS)
 		r.Use(router.m.Authenticate)
 
+		router.goal.Routes(r)
+		router.goalTransaction.Routes(r)
 	})
 
 	return r

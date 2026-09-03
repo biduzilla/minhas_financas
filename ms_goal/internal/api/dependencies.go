@@ -14,12 +14,14 @@ type dependencies struct {
 	handlers     *handlers
 	mw           *middleware.Middleware
 	routers      *Router
+	producers    *producers
 }
 
 func (app *application) buildDependencies(shutdown chan struct{}) (*dependencies, error) {
 	repo := NewRepositories(app.db, app.Logger)
 	tx := transaction.NewManager(app.db)
-	services, err := NewServices(repo, tx, app.config, app.Logger)
+	producers := NewProducers(app.kafkaProducer, app.Logger)
+	services, err := NewServices(repo, tx, app.config, app.Logger, producers)
 	if err != nil {
 		return nil, err
 	}

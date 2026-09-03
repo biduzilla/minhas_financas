@@ -1,70 +1,53 @@
-package goal
+package goaltransaction
 
 import (
 	"context"
 	"ms_goal/internal/core/cache"
 	"ms_goal/internal/core/domain/apiError"
 	"ms_goal/internal/core/filters"
-	"ms_goal/internal/core/messaging/events"
 	"ms_goal/internal/core/validator"
 	"uuid"
 )
 
-type GoalService struct {
+type GoalTransactionService struct {
 	repo       repository
 	cache      cache.Cache
 	keyBuilder cache.KeyBuilder
 	we         WriteExecutor
-	producers  goalProducer
-	gtService  gtService
-}
-
-type goalProducer interface {
-	PublishGoalCreated(
-		ctx context.Context,
-		event events.GoalEvent,
-	) error
-
-	PublishGoalDeleted(
-		ctx context.Context,
-		event events.GoalEvent,
-	) error
 }
 
 type WriteExecutor interface {
 	Execute(ctx context.Context, fn func(ctx context.Context) error) error
 }
 
-type gtService interface {
-	DeleteByGoalId(
-		ctx context.Context,
-		id uuid.UUID,
-	) error
-}
 type service interface {
 	FindByID(
 		ctx context.Context,
 		id uuid.UUID,
-	) (*Goal, error)
+	) (*GoalTransaction, error)
 
 	FindAll(
 		ctx context.Context,
-		search string,
-		status GoalStatus,
+		goalID uuid.UUID,
 		f filters.Filters,
-	) ([]*Goal, filters.Metadata, error)
+	) ([]*GoalTransaction, filters.Metadata, error)
 
 	Insert(
 		ctx context.Context,
-		model *Goal,
+		model *GoalTransaction,
 	) error
 
 	Update(
 		ctx context.Context,
-		model *Goal,
+		model *GoalTransaction,
 	) error
 
 	DeleteById(
+		ctx context.Context,
+		id uuid.UUID,
+	) error
+
+	DeleteByGoalId(
 		ctx context.Context,
 		id uuid.UUID,
 	) error
@@ -75,44 +58,39 @@ func NewService(
 	cache cache.Cache,
 	keyBuilder cache.KeyBuilder,
 	we WriteExecutor,
-	producers goalProducer,
-	gtService gtService,
-) *GoalService {
-	return &GoalService{
+) *GoalTransactionService {
+	return &GoalTransactionService{
 		repo:       repo,
 		cache:      cache,
 		keyBuilder: keyBuilder,
 		we:         we,
-		producers:  producers,
-		gtService:  gtService,
 	}
 }
 
-func (s *GoalService) FindByID(
+func (s *GoalTransactionService) FindByID(
 	ctx context.Context,
 	id uuid.UUID,
-) (*Goal, error) {
+) (*GoalTransaction, error) {
 	key := s.keyBuilder.BuildItemKey(id.String())
 
-	return cache.FetchOrCache(ctx, s.cache, key, func() (*Goal, error) {
+	return cache.FetchOrCache(ctx, s.cache, key, func() (*GoalTransaction, error) {
 		return s.repo.FindByID(ctx, id)
 	})
 }
 
-func (s *GoalService) FindAll(
+func (s *GoalTransactionService) FindAll(
 	ctx context.Context,
-	search string,
-	status GoalStatus,
+	goalId uuid.UUID,
 	f filters.Filters,
-) ([]*Goal, filters.Metadata, error) {
-	key := s.keyBuilder.BuildListKey(search, status, f.Page, f.PageSize, f.Sort)
+) ([]*GoalTransaction, filters.Metadata, error) {
+	key := s.keyBuilder.BuildListKey(goalId, f.Page, f.PageSize, f.Sort)
 	type listPayload struct {
-		Models   []*Goal
+		Models   []*GoalTransaction
 		Metadata filters.Metadata
 	}
 
 	payload, err := cache.FetchOrCache(ctx, s.cache, key, func() (listPayload, error) {
-		models, meta, err := s.repo.FindAll(ctx, search, status, f)
+		models, meta, err := s.repo.FindAll(ctx, goalId, f)
 		if err != nil {
 			return listPayload{}, err
 		}
@@ -130,30 +108,23 @@ func (s *GoalService) FindAll(
 	return payload.Models, payload.Metadata, nil
 }
 
-func (s *GoalService) Insert(
+func (s *GoalTransactionService) Insert(
 	ctx context.Context,
-	model *Goal,
+	model *GoalTransaction,
 ) error {
 	v := validator.New()
 	if model.Validate(v); !v.Valid() {
 		return apiError.NewValidationError(v.Errors)
 	}
 
-	err := s.we.Execute(ctx, func(ctx context.Context) error {
+	return s.we.Execute(ctx, func(ctx context.Context) error {
 		return s.repo.Insert(ctx, model)
 	})
-	if err != nil {
-		return err
-	}
-
-	return s.producers.PublishGoalCreated(ctx, *events.NewGoalEvent(
-		model.ID, model.Name,
-	))
 }
 
-func (s *GoalService) Update(
+func (s *GoalTransactionService) Update(
 	ctx context.Context,
-	model *Goal,
+	model *GoalTransaction,
 ) error {
 	v := validator.New()
 	if model.Validate(v); !v.Valid() {
@@ -165,21 +136,20 @@ func (s *GoalService) Update(
 	})
 }
 
-func (s *GoalService) DeleteById(
+func (s *GoalTransactionService) DeleteById(
 	ctx context.Context,
 	id uuid.UUID,
 ) error {
-	err := s.we.Execute(ctx, func(ctx context.Context) error {
-		err := s.repo.DeleteById(ctx, id)
-		if err != nil {
-			return err
-		}
-
-		return s.gtService.DeleteByGoalId(ctx, id)
+	return s.we.Execute(ctx, func(ctx context.Context) error {
+		return s.repo.DeleteById(ctx, id)
 	})
-	if err != nil {
-		return err
-	}
+}
 
-	return s.producers.PublishGoalDeleted(ctx, *events.NewGoalEvent(id, ""))
+func (s *GoalTransactionService) DeleteByGoalId(
+	ctx context.Context,
+	id uuid.UUID,
+) error {
+	return s.we.Execute(ctx, func(ctx context.Context) error {
+		return s.repo.DeleteByGoalId(ctx, id)
+	})
 }
