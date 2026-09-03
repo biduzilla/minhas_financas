@@ -39,6 +39,9 @@ type Config struct {
 	Otel struct {
 		Port string `env:"JAEGER_PORT,required"`
 	}
+	Clients struct {
+		TransactionURL string `env:"TRANSACTION_SERVICE_URL,required"`
+	}
 }
 
 func New() *Config {

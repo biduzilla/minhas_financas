@@ -11,7 +11,8 @@ import (
 	"ms_category/internal/core/filters"
 	"ms_category/pkg/sqlformat"
 
-	"github.com/google/uuid"
+	"uuid"
+
 	"github.com/lib/pq"
 )
 

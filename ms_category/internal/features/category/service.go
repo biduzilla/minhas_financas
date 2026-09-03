@@ -6,19 +6,23 @@ import (
 	"ms_category/internal/core/domain/apiError"
 	"ms_category/internal/core/filters"
 	"ms_category/internal/core/validator"
-
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type CategoryService struct {
-	repo       repository
-	cache      cache.Cache
-	keyBuilder cache.KeyBuilder
-	we         WriteExecutor
+	repo              repository
+	cache             cache.Cache
+	keyBuilder        cache.KeyBuilder
+	we                WriteExecutor
+	transactionClient transactionClient
 }
 
 type WriteExecutor interface {
 	Execute(ctx context.Context, fn func(ctx context.Context) error) error
+}
+
+type transactionClient interface {
+	DeleteByCategoryId(ctx context.Context, id uuid.UUID) error
 }
 
 func NewService(
@@ -26,12 +30,14 @@ func NewService(
 	cache cache.Cache,
 	keyBuilder cache.KeyBuilder,
 	we WriteExecutor,
+	transactionClient transactionClient,
 ) *CategoryService {
 	return &CategoryService{
-		repo:       repo,
-		cache:      cache,
-		keyBuilder: keyBuilder,
-		we:         we,
+		repo:              repo,
+		cache:             cache,
+		keyBuilder:        keyBuilder,
+		we:                we,
+		transactionClient: transactionClient,
 	}
 }
 
@@ -137,6 +143,11 @@ func (s *CategoryService) DeleteById(
 	id uuid.UUID,
 ) error {
 	return s.we.Execute(ctx, func(ctx context.Context) error {
-		return s.repo.DeleteById(ctx, id)
+		err := s.repo.DeleteById(ctx, id)
+		if err != nil {
+			return err
+		}
+
+		return s.transactionClient.DeleteByCategoryId(ctx, id)
 	})
 }

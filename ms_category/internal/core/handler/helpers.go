@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type errorHandler interface {
@@ -82,7 +82,7 @@ func ParseUUID(
 			http.StatusBadRequest,
 			err,
 		))
-		return uuid.Nil, false
+		return uuid.Nil(), false
 	}
 
 	uid, err := uuid.Parse(id)
@@ -92,7 +92,7 @@ func ParseUUID(
 			http.StatusBadRequest,
 			err,
 		))
-		return uuid.Nil, false
+		return uuid.Nil(), false
 	}
 
 	return uid, true
