@@ -74,6 +74,11 @@ type repository interface {
 		ctx context.Context,
 		id uuid.UUID,
 	) error
+
+	DeleteByCategoryId(
+		ctx context.Context,
+		id uuid.UUID,
+	) error
 }
 
 func (r *TransactionRepository) FindAll(
@@ -340,6 +345,54 @@ func (r *TransactionRepository) DeleteById(
 	params := map[string]any{
 		"id":      id,
 		"user_id": userAuth.GetID(),
+	}
+
+	query, args := sqlformat.NamedQuery(query, params)
+	r.logger.Info("query executed", "sql", sqlformat.MinifySQL(query))
+
+	tx := contexts.GetTx(ctx)
+	if tx == nil {
+		panic("transaction necessary for this operation")
+	}
+
+	result, err := tx.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return apiError.ErrRecordNotFound
+	}
+
+	return nil
+}
+
+func (r *TransactionRepository) DeleteByCategoryId(
+	ctx context.Context,
+	id uuid.UUID,
+) error {
+	userAuth := contexts.GetUser(ctx)
+
+	query := `
+		UPDATE transactions
+		SET
+			deleted = true,
+			updated_at = NOW(),
+			updated_by = :user_id,
+			version = version + 1
+		WHERE
+			category_id = :id
+			AND deleted = false
+			AND user_id = :user_id
+	`
+
+	params := map[string]any{
+		"category_id": id,
+		"user_id":     userAuth.GetID(),
 	}
 
 	query, args := sqlformat.NamedQuery(query, params)

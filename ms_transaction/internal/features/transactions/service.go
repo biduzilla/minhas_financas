@@ -26,6 +26,7 @@ type service interface {
 	Insert(ctx context.Context, model *Transaction) error
 	Update(ctx context.Context, model *Transaction) error
 	DeleteById(ctx context.Context, id uuid.UUID) error
+	DeleteByCategoryId(ctx context.Context, id uuid.UUID) error
 }
 
 func NewService(
@@ -124,5 +125,14 @@ func (s *TransactionService) DeleteById(
 ) error {
 	return s.we.Execute(ctx, func(ctx context.Context) error {
 		return s.repo.DeleteById(ctx, id)
+	})
+}
+
+func (s *TransactionService) DeleteByCategoryId(
+	ctx context.Context,
+	id uuid.UUID,
+) error {
+	return s.we.Execute(ctx, func(ctx context.Context) error {
+		return s.repo.DeleteByCategoryId(ctx, id)
 	})
 }

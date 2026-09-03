@@ -21,6 +21,7 @@ type transactionHandler interface {
 	FindById(w http.ResponseWriter, r *http.Request)
 	Update(w http.ResponseWriter, r *http.Request)
 	DeleteById(w http.ResponseWriter, r *http.Request)
+	DeleteByCategoryId(w http.ResponseWriter, r *http.Request)
 }
 
 func NewRouter(
@@ -43,6 +44,7 @@ func (r *TransactionRouter) Routes(router chi.Router) {
 			router.Get("/{id}", r.handler.FindById)
 			router.Put("/{id}", r.handler.Update)
 			router.Delete("/{id}", r.handler.DeleteById)
+			router.Delete("/category/{id}", r.handler.DeleteByCategoryId)
 		})
 	})
 }

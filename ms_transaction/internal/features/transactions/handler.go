@@ -180,6 +180,29 @@ func (h *TransactionHandler) DeleteById(w http.ResponseWriter, r *http.Request) 
 	handler.Respond(w, r, http.StatusNoContent, nil, nil, h.errHandler)
 }
 
+func (h *TransactionHandler) DeleteByCategoryId(w http.ResponseWriter, r *http.Request) {
+	tracer := otel.Tracer("ms_transaction/internal/features/transactions")
+	ctx, span := tracer.Start(r.Context(), "TransactionHandler.DeleteByCategoryId")
+	defer span.End()
+
+	id, ok := handler.ParseUUID(w, r, h.errHandler)
+	if !ok {
+		span.SetStatus(codes.Error, "invalid id")
+		return
+	}
+
+	span.SetAttributes(attribute.String("transaction.id", id.String()))
+
+	if err := h.service.DeleteByCategoryId(ctx, id); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "Failed to delete transaction")
+		h.errHandler.HandlerError(w, r, err)
+		return
+	}
+
+	handler.Respond(w, r, http.StatusNoContent, nil, nil, h.errHandler)
+}
+
 func parseTransactionQuery(r *http.Request) (transactionQuery, error) {
 	v := validator.New()
 
