@@ -19,6 +19,8 @@ func NewServices(
 	tx transaction.Manager,
 	config config.Config,
 	logger *slog.Logger,
+	clients *clients,
+	producers *producers,
 ) (*services, error) {
 	cacheClient, err := cache.NewRedisCache(config.Cache.Addr, config.Cache.Password, config.Cache.Db, nil)
 
@@ -40,6 +42,8 @@ func NewServices(
 		cacheClient,
 		transactionKeyBuilder,
 		transactionWriteExecutor,
+		clients.category,
+		producers.transactionProducer,
 	)
 
 	return &services{

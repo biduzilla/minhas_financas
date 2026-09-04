@@ -39,6 +39,13 @@ type Config struct {
 	Otel struct {
 		Port string `env:"JAEGER_PORT,required"`
 	}
+	Clients struct {
+		CategoryURL string `env:"CATEGORY_SERVICE_URL,required"`
+	}
+	Kafka struct {
+		Brokers []string `env:"KAFKA_BROKERS,required"`
+		GroupID string   `env:"KAFKA_GROUP_ID,required"`
+	}
 }
 
 func New() *Config {
