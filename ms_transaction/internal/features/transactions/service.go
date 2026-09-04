@@ -5,19 +5,37 @@ import (
 	"ms_transaction/internal/core/cache"
 	"ms_transaction/internal/core/domain/apiError"
 	"ms_transaction/internal/core/filters"
+	"ms_transaction/internal/core/httpclient/categories"
+	"ms_transaction/internal/core/messaging/events"
 	"ms_transaction/internal/core/validator"
 	"uuid"
 )
 
 type TransactionService struct {
-	repo       repository
-	cache      cache.Cache
-	keyBuilder cache.KeyBuilder
-	we         WriteExecutor
+	repo                repository
+	cache               cache.Cache
+	keyBuilder          cache.KeyBuilder
+	we                  WriteExecutor
+	categoryClient      categoryClient
+	transactionProducer transactionProducer
+}
+
+type categoryClient interface {
+	FindByID(
+		ctx context.Context,
+		id uuid.UUID,
+	) (categories.CategoryDTO, error)
 }
 
 type WriteExecutor interface {
 	Execute(ctx context.Context, fn func(ctx context.Context) error) error
+}
+
+type transactionProducer interface {
+	PublishTransactionGoalCreated(
+		ctx context.Context,
+		event events.TransactionEvent,
+	) error
 }
 
 type service interface {
@@ -34,12 +52,16 @@ func NewService(
 	cache cache.Cache,
 	keyBuilder cache.KeyBuilder,
 	we WriteExecutor,
+	categoryClient categoryClient,
+	transactionProducer transactionProducer,
 ) *TransactionService {
 	return &TransactionService{
-		repo:       repo,
-		cache:      cache,
-		keyBuilder: keyBuilder,
-		we:         we,
+		repo:                repo,
+		cache:               cache,
+		keyBuilder:          keyBuilder,
+		we:                  we,
+		categoryClient:      categoryClient,
+		transactionProducer: transactionProducer,
 	}
 }
 
@@ -100,9 +122,28 @@ func (s *TransactionService) Insert(
 		return apiError.NewValidationError(v.Errors)
 	}
 
-	return s.we.Execute(ctx, func(ctx context.Context) error {
+	category, err := s.categoryClient.FindByID(ctx, model.CategoryID)
+	if err != nil {
+		return err
+	}
+
+	err = s.we.Execute(ctx, func(ctx context.Context) error {
 		return s.repo.Insert(ctx, model)
 	})
+	if err != nil {
+		return err
+	}
+
+	if category.GoalID != nil {
+		err := s.transactionProducer.PublishTransactionGoalCreated(ctx, events.NewTransactionEvent(
+			model.ID, model.Amount, model.UserID, *category.GoalID,
+		))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *TransactionService) Update(

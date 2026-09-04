@@ -2,6 +2,7 @@ package category
 
 import (
 	"context"
+	"fmt"
 	"ms_category/internal/core/cache"
 	"ms_category/internal/core/domain/apiError"
 	"ms_category/internal/core/filters"
@@ -142,6 +143,15 @@ func (s *CategoryService) DeleteById(
 	ctx context.Context,
 	id uuid.UUID,
 ) error {
+	category, err := s.FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	if category.GoalID != nil {
+		return apiError.NewBadRequestError(fmt.Errorf("Not possible delete goal in category service"))
+	}
+
 	return s.we.Execute(ctx, func(ctx context.Context) error {
 		err := s.repo.DeleteById(ctx, id)
 		if err != nil {

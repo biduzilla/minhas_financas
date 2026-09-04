@@ -3,6 +3,7 @@ package goal
 import (
 	"context"
 	"ms_goal/internal/core/cache"
+	"ms_goal/internal/core/contexts"
 	"ms_goal/internal/core/domain/apiError"
 	"ms_goal/internal/core/filters"
 	"ms_goal/internal/core/messaging/events"
@@ -146,8 +147,8 @@ func (s *GoalService) Insert(
 		return err
 	}
 
-	return s.producers.PublishGoalCreated(ctx, *events.NewGoalEvent(
-		model.ID, model.Name,
+	return s.producers.PublishGoalCreated(ctx, events.NewGoalEvent(
+		model.ID, model.Name, contexts.GetUser(ctx).GetID(),
 	))
 }
 
@@ -181,5 +182,7 @@ func (s *GoalService) DeleteById(
 		return err
 	}
 
-	return s.producers.PublishGoalDeleted(ctx, *events.NewGoalEvent(id, ""))
+	return s.producers.PublishGoalDeleted(ctx, events.NewGoalEvent(
+		id, "", contexts.GetUser(ctx).GetID(),
+	))
 }
