@@ -57,6 +57,10 @@ type repository interface {
 		ctx context.Context,
 		id uuid.UUID,
 	) error
+	DeleteByGoalId(
+		ctx context.Context,
+		id uuid.UUID,
+	) error
 }
 
 func parseConstraintError(err error) error {
@@ -320,6 +324,54 @@ func (r *CategoryRepository) DeleteById(
 
 	params := map[string]any{
 		"id":      id,
+		"user_id": userAuth.GetID(),
+	}
+
+	query, args := sqlformat.NamedQuery(query, params)
+	r.logger.Info("query executed", "sql", sqlformat.MinifySQL(query))
+
+	tx := contexts.GetTx(ctx)
+	if tx == nil {
+		panic("transaction necessary for this operation")
+	}
+
+	result, err := tx.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return apiError.ErrRecordNotFound
+	}
+
+	return nil
+}
+
+func (r *CategoryRepository) DeleteByGoalId(
+	ctx context.Context,
+	id uuid.UUID,
+) error {
+	userAuth := contexts.GetUser(ctx)
+
+	query := `
+		update categories
+		set
+			deleted = true,
+			updated_at = NOW(),
+			updated_by = :user_id,
+			version = version + 1
+		where
+			goal_id = :id
+			and deleted = false
+			and user_id = :user_id
+	`
+
+	params := map[string]any{
+		"goal_id": id,
 		"user_id": userAuth.GetID(),
 	}
 

@@ -1,6 +1,6 @@
 package domain
 
-import "github.com/google/uuid"
+import "uuid"
 
 type UserDetails interface {
 	GetID() uuid.UUID
@@ -12,7 +12,7 @@ type UserDetails interface {
 
 type anonymousUser struct{}
 
-func (anonymousUser) GetID() uuid.UUID    { return uuid.Nil }
+func (anonymousUser) GetID() uuid.UUID    { return uuid.Nil() }
 func (anonymousUser) GetUsername() string { return "" }
 func (anonymousUser) GetIsAtivo() bool    { return false }
 func (anonymousUser) IsAnonymous() bool   { return true }

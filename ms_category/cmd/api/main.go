@@ -34,12 +34,13 @@ func main() {
 
 	cfg.Otel.Port = "localhost:4318"
 
-	app := api.NewApp(cfg)
-	if app == nil {
+	app, err := api.NewApp(cfg)
+	if err != nil {
 		slog.Error("failed to initialize app")
 		os.Exit(1)
 	}
-	err := app.Server()
+
+	err = app.Server()
 	if err != nil {
 		app.Logger.Error(err.Error())
 	}

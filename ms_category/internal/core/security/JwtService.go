@@ -13,9 +13,9 @@ import (
 	"os"
 	"strings"
 	"time"
+	"uuid"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
 type JwtService struct {

@@ -16,15 +16,17 @@ type dependencies struct {
 	routers      *Router
 }
 
-func (app *application) buildDependencies(shutdown chan struct{}) (*dependencies, error) {
+func (app *application) buildDependencies(shutdown chan struct{}) (*dependencies, func(), error) {
 	repo := NewRepositories(app.db, app.Logger)
 	tx := transaction.NewManager(app.db)
 	clients := NewClients(app.config)
 	services, err := NewServices(repo, tx, app.config, app.Logger, clients)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
+	consumers := NewConsumer(app.kafkaConsumer, services, app.Logger)
+	shutdownConsumers := consumers.Start(app.Logger)
 	errHandler := apiError.NewErrorHandler(app.Logger)
 	handlers := NewHandlers(services, errHandler)
 	middleware := middleware.New(
@@ -49,5 +51,5 @@ func (app *application) buildDependencies(shutdown chan struct{}) (*dependencies
 		handlers:     handlers,
 		mw:           middleware,
 		routers:      router,
-	}, nil
+	}, shutdownConsumers, nil
 }

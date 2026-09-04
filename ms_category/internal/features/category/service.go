@@ -68,6 +68,11 @@ type service interface {
 		ctx context.Context,
 		id uuid.UUID,
 	) error
+
+	DeleteByGoalId(
+		ctx context.Context,
+		id uuid.UUID,
+	) error
 }
 
 func (s *CategoryService) FindByID(
@@ -159,5 +164,14 @@ func (s *CategoryService) DeleteById(
 		}
 
 		return s.transactionClient.DeleteByCategoryId(ctx, id)
+	})
+}
+
+func (s *CategoryService) DeleteByGoalId(
+	ctx context.Context,
+	id uuid.UUID,
+) error {
+	return s.we.Execute(ctx, func(ctx context.Context) error {
+		return s.repo.DeleteByGoalId(ctx, id)
 	})
 }
