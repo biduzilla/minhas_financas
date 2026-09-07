@@ -15,6 +15,7 @@ import (
 
 const (
 	TransactionGoalCreatedTopic = "transaction_goal_created"
+	TransactionGoalDeletedTopic = "transaction_goal_deleted"
 )
 
 type TransactionProducer struct {
@@ -40,6 +41,17 @@ func (p *TransactionProducer) PublishTransactionGoalCreated(
 		event,
 		TransactionGoalCreatedTopic,
 		"TransactionProducer.PublishTransactionGoalCreated",
+	)
+}
+
+func (p *TransactionProducer) PublishTransactionGoalDeleted(
+	ctx context.Context,
+	event events.TransactionEvent,
+) error {
+	return p.publishEvent(ctx,
+		event,
+		TransactionGoalDeletedTopic,
+		"TransactionProducer.PublishTransactionGoalDeleted",
 	)
 }
 

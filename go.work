@@ -5,4 +5,5 @@ use (
     ./ms_category
     ./ms_transaction
     ./ms_goal
+    ./shared
 )

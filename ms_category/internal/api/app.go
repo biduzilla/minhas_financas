@@ -47,7 +47,7 @@ func NewApp(cfg config.Config) (*application, error) {
 		cfg.Kafka.GroupID,
 	)
 	if err != nil {
-		logger.Error(err.Error(), err)
+		logger.Error(err.Error())
 		return nil, err
 	}
 

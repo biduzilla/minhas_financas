@@ -36,6 +36,11 @@ type transactionProducer interface {
 		ctx context.Context,
 		event events.TransactionEvent,
 	) error
+
+	PublishTransactionGoalDeleted(
+		ctx context.Context,
+		event events.TransactionEvent,
+	) error
 }
 
 type service interface {
@@ -164,9 +169,35 @@ func (s *TransactionService) DeleteById(
 	ctx context.Context,
 	id uuid.UUID,
 ) error {
-	return s.we.Execute(ctx, func(ctx context.Context) error {
+	t, err := s.FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	c, err := s.categoryClient.FindByID(ctx, t.CategoryID)
+	if err != nil {
+		return err
+	}
+
+	err = s.we.Execute(ctx, func(ctx context.Context) error {
 		return s.repo.DeleteById(ctx, id)
 	})
+	if err != nil {
+		return err
+	}
+
+	if c.GoalID != nil {
+		return s.transactionProducer.PublishTransactionGoalDeleted(
+			ctx,
+			events.NewTransactionEvent(
+				id,
+				0.0,
+				t.UserID,
+				*c.GoalID,
+			))
+	}
+
+	return nil
 }
 
 func (s *TransactionService) DeleteByCategoryId(

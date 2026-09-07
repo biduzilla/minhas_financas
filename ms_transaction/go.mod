@@ -5,6 +5,7 @@ go 1.27.0
 require go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.70.0
 
 require (
+	shared v0.0.0 
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0 // indirect

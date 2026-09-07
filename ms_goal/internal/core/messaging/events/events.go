@@ -8,6 +8,13 @@ type GoalEvent struct {
 	UserID uuid.UUID `json:"user_id"`
 }
 
+type TransactionEvent struct {
+	ID     uuid.UUID `json:"id"`
+	Amount float64   `json:"name"`
+	UserID uuid.UUID `json:"user_id"`
+	GoalID uuid.UUID `json:"goal_id"`
+}
+
 func NewGoalEvent(
 	id uuid.UUID,
 	name string,

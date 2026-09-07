@@ -4,8 +4,8 @@ import (
 	"context"
 	"log/slog"
 	"ms_category/internal/core/messaging"
+	c "ms_category/internal/core/messaging/consumers"
 	"ms_category/internal/core/messaging/events"
-	c "ms_category/internal/features/consumers"
 
 	"github.com/IBM/sarama"
 )
