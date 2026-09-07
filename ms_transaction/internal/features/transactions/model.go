@@ -2,8 +2,8 @@ package transactions
 
 import (
 	"fmt"
-	"ms_transaction/internal/core/domain/models"
-	"ms_transaction/internal/core/validator"
+	"shared/domain/models"
+	"shared/validator"
 	"time"
 	"uuid"
 )

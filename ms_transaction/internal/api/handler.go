@@ -1,8 +1,8 @@
 package api
 
 import (
-	"ms_transaction/internal/core/domain/apiError"
 	"ms_transaction/internal/features/transactions"
+	"shared/domain/apiError"
 )
 
 type handlers struct {

@@ -4,29 +4,27 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"shared/config"
 	"time"
 
 	"github.com/XSAM/otelsql"
 )
 
-func OpenDB(
-	maxOpenConns, maxIdleConns int,
-	maxIdleTime, dataSourceName string,
-) (*sql.DB, error) {
+func OpenDB(cfg config.Config) (*sql.DB, error) {
 	driverName, err := otelsql.Register("postgres")
 	if err != nil {
 		return nil, fmt.Errorf("error with the otelsql registry driver: %w", err)
 	}
 
-	db, err := sql.Open(driverName, dataSourceName)
+	db, err := sql.Open(driverName, cfg.DB.DSN)
 	if err != nil {
 		return nil, err
 	}
 
-	db.SetMaxOpenConns(maxOpenConns)
-	db.SetMaxIdleConns(maxIdleConns)
+	db.SetMaxOpenConns(cfg.DB.MaxOpenConns)
+	db.SetMaxIdleConns(cfg.DB.MaxIdleConns)
 
-	duration, err := time.ParseDuration(maxIdleTime)
+	duration, err := time.ParseDuration(cfg.DB.MaxIdleTime)
 	if err != nil {
 		return nil, err
 	}

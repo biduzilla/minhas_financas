@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"expvar"
 	"fmt"
-	"ms_transaction/internal/core/domain/apiError"
-	"ms_transaction/internal/core/metrics"
 	"ms_transaction/internal/features/transactions"
 	"net/http"
+	"shared/domain/apiError"
+	"shared/metrics"
 
 	"github.com/go-chi/chi/v5"
 )

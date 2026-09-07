@@ -5,11 +5,11 @@ import (
 	"expvar"
 	"log/slog"
 	"ms_transaction/internal/core/config"
-	"ms_transaction/internal/core/database"
-	"ms_transaction/internal/core/loggerutils"
-	"ms_transaction/internal/core/messaging"
 	"os"
 	"runtime"
+	"shared/database"
+	"shared/loggerutils"
+	"shared/messaging"
 	"sync"
 	"time"
 
@@ -34,7 +34,7 @@ func NewApp(cfg config.Config) (*application, error) {
 
 	logger := slog.New(&loggerutils.ErrorAwareHandler{Handler: baseHandler})
 
-	db, err := database.OpenDB(cfg)
+	db, err := database.OpenDB(cfg.Base)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, err

@@ -2,11 +2,11 @@ package api
 
 import (
 	"log/slog"
-	"ms_transaction/internal/core/cache"
-	"ms_transaction/internal/core/config"
-	"ms_transaction/internal/core/security"
-	"ms_transaction/internal/core/transaction"
 	"ms_transaction/internal/features/transactions"
+	"shared/cache"
+	"shared/config"
+	"shared/security"
+	"shared/transaction"
 )
 
 type services struct {

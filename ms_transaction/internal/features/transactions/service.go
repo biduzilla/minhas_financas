@@ -2,12 +2,12 @@ package transactions
 
 import (
 	"context"
-	"ms_transaction/internal/core/cache"
-	"ms_transaction/internal/core/domain/apiError"
-	"ms_transaction/internal/core/filters"
 	"ms_transaction/internal/core/httpclient/categories"
 	"ms_transaction/internal/core/messaging/events"
-	"ms_transaction/internal/core/validator"
+	"shared/cache"
+	"shared/domain/apiError"
+	"shared/filters"
+	"shared/validator"
 	"uuid"
 )
 

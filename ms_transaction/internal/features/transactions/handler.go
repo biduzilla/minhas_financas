@@ -7,11 +7,11 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 
-	"ms_transaction/internal/core/domain/apiError"
-	"ms_transaction/internal/core/filters"
-	"ms_transaction/internal/core/handler"
-	"ms_transaction/internal/core/validator"
-	"ms_transaction/pkg/httputil"
+	"shared/domain/apiError"
+	"shared/filters"
+	"shared/handler"
+	"shared/httputil"
+	"shared/validator"
 )
 
 type TransactionHandler struct {
