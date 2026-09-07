@@ -3,7 +3,7 @@ package contexts
 import (
 	"context"
 	"database/sql"
-	"shared/domain"
+	"shared/auth/domain"
 )
 
 type contextKey string

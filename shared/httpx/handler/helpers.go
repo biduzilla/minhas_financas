@@ -3,10 +3,10 @@ package handler
 import (
 	"fmt"
 	"net/http"
-	"shared/domain/apiError"
-	"shared/filters"
-	"shared/httpjson"
-	"shared/httputil"
+	"shared/auth/domain/apiError"
+	"shared/httpx/httpjson"
+	"shared/httpx/httputil"
+	"shared/utils/filters"
 	"shared/validator"
 	"strconv"
 

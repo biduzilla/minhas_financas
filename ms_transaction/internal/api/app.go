@@ -7,9 +7,9 @@ import (
 	"ms_transaction/internal/core/config"
 	"os"
 	"runtime"
-	"shared/database"
-	"shared/loggerutils"
+	"shared/db/database"
 	"shared/messaging"
+	"shared/obs/loggerutils"
 	"sync"
 	"time"
 

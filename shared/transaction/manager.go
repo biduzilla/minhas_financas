@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"shared/contexts"
+	"shared/auth/contexts"
 )
 
 type Manager interface {

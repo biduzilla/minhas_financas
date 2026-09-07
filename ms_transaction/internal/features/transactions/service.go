@@ -4,9 +4,9 @@ import (
 	"context"
 	"ms_transaction/internal/core/httpclient/categories"
 	"ms_transaction/internal/core/messaging/events"
+	"shared/auth/domain/apiError"
 	"shared/cache"
-	"shared/domain/apiError"
-	"shared/filters"
+	"shared/utils/filters"
 	"shared/validator"
 	"uuid"
 )

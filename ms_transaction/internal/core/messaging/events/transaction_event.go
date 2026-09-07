@@ -9,6 +9,10 @@ type TransactionEvent struct {
 	GoalID uuid.UUID `json:"goal_id"`
 }
 
+func (e TransactionEvent) Key() string {
+	return e.ID.String()
+}
+
 func NewTransactionEvent(
 	id uuid.UUID,
 	amount float64,

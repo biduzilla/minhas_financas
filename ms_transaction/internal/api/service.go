@@ -3,9 +3,9 @@ package api
 import (
 	"log/slog"
 	"ms_transaction/internal/features/transactions"
+	"shared/auth/security"
 	"shared/cache"
 	"shared/config"
-	"shared/security"
 	"shared/transaction"
 )
 

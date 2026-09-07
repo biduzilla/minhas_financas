@@ -2,7 +2,7 @@ package transactions
 
 import (
 	"fmt"
-	"shared/domain/models"
+	"shared/auth/domain/models"
 	"shared/validator"
 	"time"
 	"uuid"

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"shared/contexts"
-	"shared/httpjson"
+	"shared/auth/contexts"
+	"shared/httpx/httpjson"
 )
 
 type StatusError interface {

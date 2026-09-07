@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"shared/otel"
+	"shared/obs/otel"
 	"syscall"
 	"time"
 

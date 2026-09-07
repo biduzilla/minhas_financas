@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"ms_transaction/internal/features/transactions"
 	"net/http"
-	"shared/domain/apiError"
-	"shared/metrics"
+	"shared/auth/domain/apiError"
+	"shared/obs/metrics"
 
 	"github.com/go-chi/chi/v5"
 )

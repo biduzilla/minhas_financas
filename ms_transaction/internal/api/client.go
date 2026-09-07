@@ -3,7 +3,7 @@ package api
 import (
 	"ms_transaction/internal/core/config"
 	"ms_transaction/internal/core/httpclient/categories"
-	"shared/httpclient"
+	"shared/httpx/httpclient"
 )
 
 type clients struct {

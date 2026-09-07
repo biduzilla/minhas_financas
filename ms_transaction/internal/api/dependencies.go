@@ -1,8 +1,8 @@
 package api
 
 import (
-	"shared/domain/apiError"
-	"shared/middleware"
+	"shared/auth/domain/apiError"
+	"shared/obs/middleware"
 	"shared/transaction"
 )
 

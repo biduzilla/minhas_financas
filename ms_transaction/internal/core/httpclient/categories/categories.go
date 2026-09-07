@@ -3,8 +3,8 @@ package categories
 import (
 	"context"
 	"net/http"
-	"shared/domain/apiError"
-	"shared/httpclient"
+	"shared/auth/domain/apiError"
+	"shared/httpx/httpclient"
 	"uuid"
 )
 

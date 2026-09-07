@@ -7,10 +7,10 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 
-	"shared/domain/apiError"
-	"shared/filters"
-	"shared/handler"
-	"shared/httputil"
+	"shared/auth/domain/apiError"
+	"shared/httpx/handler"
+	"shared/httpx/httputil"
+	"shared/utils/filters"
 	"shared/validator"
 )
 
