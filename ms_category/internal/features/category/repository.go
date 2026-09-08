@@ -6,10 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"ms_category/internal/core/contexts"
-	"ms_category/internal/core/domain/apiError"
-	"ms_category/internal/core/filters"
-	"ms_category/pkg/sqlformat"
+	"shared/auth/contexts"
+	"shared/auth/domain/apiError"
+	"shared/db/sqlformat"
+	"shared/utils/filters"
 
 	"uuid"
 

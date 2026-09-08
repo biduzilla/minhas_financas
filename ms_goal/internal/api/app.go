@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"expvar"
 	"log/slog"
+	"messaging"
 	"ms_goal/internal/core/config"
-	"ms_goal/internal/core/database"
-	"ms_goal/internal/core/loggerutils"
-	"ms_goal/internal/core/messaging"
 	"os"
 	"runtime"
+	"shared/db/database"
+	"shared/obs/loggerutils"
 	"sync"
 	"time"
 
@@ -34,7 +34,7 @@ func NewApp(cfg config.Config) (*application, error) {
 
 	logger := slog.New(&loggerutils.ErrorAwareHandler{Handler: baseHandler})
 
-	db, err := database.OpenDB(cfg)
+	db, err := database.OpenDB(cfg.Base)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, err

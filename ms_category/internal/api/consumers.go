@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 	"log/slog"
-	"ms_category/internal/core/messaging"
+	"messaging"
 	c "ms_category/internal/core/messaging/consumers"
 	"ms_category/internal/core/messaging/events"
 

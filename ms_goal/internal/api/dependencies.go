@@ -1,9 +1,9 @@
 package api
 
 import (
-	"ms_goal/internal/core/domain/apiError"
-	"ms_goal/internal/core/middleware"
-	"ms_goal/internal/core/transaction"
+	"shared/auth/domain/apiError"
+	"shared/obs/middleware"
+	"shared/transaction"
 )
 
 type dependencies struct {
@@ -30,7 +30,7 @@ func (app *application) buildDependencies(shutdown chan struct{}) (*dependencies
 	handlers := NewHandlers(services, errHandler)
 	middleware := middleware.New(
 		errHandler,
-		app.config,
+		app.config.Base,
 		services.jwtService,
 		app.Logger,
 		shutdown,

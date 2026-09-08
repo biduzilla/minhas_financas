@@ -4,15 +4,15 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"ms_auth/internal/core/domain"
-	"ms_auth/internal/core/domain/apiError"
-	"ms_auth/internal/core/security"
-	"ms_auth/internal/core/transaction"
 	"ms_auth/internal/features/user"
 	"net/http"
+	"shared/auth/domain"
+	"shared/auth/domain/apiError"
+	"shared/auth/security"
+	"shared/transaction"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type AuthService struct {

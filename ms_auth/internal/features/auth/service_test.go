@@ -6,13 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
+
 	"golang.org/x/crypto/bcrypt"
 
-	"ms_auth/internal/core/domain"
-	"ms_auth/internal/core/domain/apiError"
-	"ms_auth/internal/core/security"
 	userPkg "ms_auth/internal/features/user"
+	"shared/auth/domain"
+	"shared/auth/domain/apiError"
+	"shared/auth/security"
 )
 
 type mockJWTService struct {

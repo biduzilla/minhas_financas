@@ -2,9 +2,9 @@ package transactions
 
 import (
 	"context"
-	"ms_category/internal/core/domain/apiError"
-	"ms_category/internal/core/httpclient"
 	"net/http"
+	"shared/auth/domain/apiError"
+	"shared/httpx/httpclient"
 	"uuid"
 )
 

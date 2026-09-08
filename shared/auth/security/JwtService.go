@@ -19,9 +19,8 @@ import (
 )
 
 type JwtService struct {
-	config     config.Config
-	privateKey *rsa.PrivateKey
-	publicKey  *rsa.PublicKey
+	config    config.Config
+	publicKey *rsa.PublicKey
 }
 
 const (
@@ -62,12 +61,6 @@ func NewService(
 }
 
 func (s *JwtService) loadKeys() error {
-	privateKey, err := loadRSAPrivateKey(s.config.Security.PrivateKeyPath)
-	if err != nil {
-		return fmt.Errorf("failed to load private key: %w", err)
-	}
-	s.privateKey = privateKey
-
 	publicKey, err := loadRSAPublicKey(s.config.Security.PublicKeyPath)
 	if err != nil {
 		return fmt.Errorf("failed to load public key: %w", err)
@@ -75,38 +68,6 @@ func (s *JwtService) loadKeys() error {
 	s.publicKey = publicKey
 
 	return nil
-}
-
-func loadRSAPrivateKey(path string) (*rsa.PrivateKey, error) {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return nil, fmt.Errorf("private key file not found: %s", path)
-	}
-
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read private key file: %w", err)
-	}
-
-	block, _ := pem.Decode(data)
-	if block == nil {
-		return nil, errors.New("failed to decode PEM block containing private key")
-	}
-
-	if key, err := x509.ParsePKCS1PrivateKey(block.Bytes); err == nil {
-		return key, nil
-	}
-
-	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse private key: %w", err)
-	}
-
-	rsaKey, ok := key.(*rsa.PrivateKey)
-	if !ok {
-		return nil, errors.New("private key is not RSA")
-	}
-
-	return rsaKey, nil
 }
 
 func loadRSAPublicKey(path string) (*rsa.PublicKey, error) {
@@ -207,43 +168,6 @@ func (s *JwtService) ValidateToken(
 	}
 
 	return claims, nil
-}
-
-func (s *JwtService) CreateToken(
-	user domain.UserDetails,
-	tokenType TokenType,
-) (string, error) {
-	var expiration time.Duration
-
-	switch tokenType {
-	case TokenTypeAccess:
-		expiration = AccessTokenExpiration
-	case TokenTypeRefresh:
-		expiration = RefreshTokenExpiration
-	default:
-		expiration = 0
-	}
-
-	now := time.Now()
-	claims := TokenClaims{
-		UserID:   user.GetID(),
-		Username: user.GetUsername(),
-		IsAtivo:  user.GetIsAtivo(),
-		Type:     tokenType,
-		Roles:    user.GetRoles(),
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(now.Add(expiration)),
-			IssuedAt:  jwt.NewNumericDate(now),
-			NotBefore: jwt.NewNumericDate(now),
-			Issuer:    TokenIssuer,
-			Audience:  jwt.ClaimStrings{TokenAudience},
-			Subject:   user.GetID().String(),
-			ID:        uuid.New().String(),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	return token.SignedString(s.privateKey)
 }
 
 func (s *JwtService) GetPublicKey() *rsa.PublicKey {

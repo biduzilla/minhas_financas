@@ -1,9 +1,9 @@
 package api
 
 import (
-	"ms_category/internal/core/domain/apiError"
-	"ms_category/internal/core/middleware"
-	"ms_category/internal/core/transaction"
+	"shared/auth/domain/apiError"
+	"shared/obs/middleware"
+	"shared/transaction"
 )
 
 type dependencies struct {
@@ -20,7 +20,7 @@ func (app *application) buildDependencies(shutdown chan struct{}) (*dependencies
 	repo := NewRepositories(app.db, app.Logger)
 	tx := transaction.NewManager(app.db)
 	clients := NewClients(app.config)
-	services, err := NewServices(repo, tx, app.config, app.Logger, clients)
+	services, err := NewServices(repo, tx, app.config.Base, app.Logger, clients)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -31,7 +31,7 @@ func (app *application) buildDependencies(shutdown chan struct{}) (*dependencies
 	handlers := NewHandlers(services, errHandler)
 	middleware := middleware.New(
 		errHandler,
-		app.config,
+		app.config.Base,
 		services.jwtService,
 		app.Logger,
 		shutdown,

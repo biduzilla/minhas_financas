@@ -8,9 +8,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 
-	"ms_auth/internal/core/domain/apiError"
-	"ms_auth/internal/core/handler"
-	"ms_auth/pkg/httputil"
+	"shared/auth/domain/apiError"
+	"shared/httpx/handler"
+	"shared/httpx/httputil"
 )
 
 type AuthHandler struct {

@@ -2,11 +2,11 @@ package api
 
 import (
 	"log/slog"
-	"ms_category/internal/core/cache"
-	"ms_category/internal/core/config"
-	"ms_category/internal/core/security"
-	"ms_category/internal/core/transaction"
 	"ms_category/internal/features/category"
+	"shared/auth/security"
+	"shared/cache"
+	"shared/config"
+	"shared/transaction"
 )
 
 type services struct {

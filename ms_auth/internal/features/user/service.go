@@ -2,12 +2,12 @@ package user
 
 import (
 	"context"
-	"ms_auth/internal/core/cache"
-	"ms_auth/internal/core/domain/apiError"
-	"ms_auth/internal/core/filters"
-	"ms_auth/internal/core/validator"
+	"shared/auth/domain/apiError"
+	"shared/cache"
+	"shared/utils/filters"
+	"shared/validator"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type UserService struct {

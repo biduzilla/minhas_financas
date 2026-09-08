@@ -2,8 +2,8 @@ package api
 
 import (
 	"ms_category/internal/core/config"
-	"ms_category/internal/core/httpclient"
 	"ms_category/internal/core/httpclient/transactions"
+	"shared/httpx/httpclient"
 )
 
 type clients struct {
@@ -17,7 +17,7 @@ func NewClients(
 		transactions: transactions.NewClient(
 			httpclient.Config{
 				BaseURL: cfg.Clients.TransactionURL,
-				Timeout: cfg.Server.Timeout,
+				Timeout: cfg.Base.Server.Timeout,
 			},
 		),
 	}

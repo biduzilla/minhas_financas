@@ -1,8 +1,8 @@
 package api
 
 import (
-	"ms_category/internal/core/domain/apiError"
 	"ms_category/internal/features/category"
+	"shared/auth/domain/apiError"
 )
 
 type handlers struct {

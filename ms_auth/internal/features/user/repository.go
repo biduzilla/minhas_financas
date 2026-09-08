@@ -6,12 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"ms_auth/internal/core/contexts"
-	"ms_auth/internal/core/domain/apiError"
-	"ms_auth/internal/core/filters"
-	"ms_auth/pkg/sqlformat"
+	"shared/auth/contexts"
+	"shared/auth/domain/apiError"
+	"shared/db/sqlformat"
+	"shared/utils/filters"
 
-	"github.com/google/uuid"
+	"uuid"
+
 	"github.com/lib/pq"
 )
 

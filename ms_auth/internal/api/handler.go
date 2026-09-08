@@ -1,9 +1,9 @@
 package api
 
 import (
-	"ms_auth/internal/core/domain/apiError"
 	"ms_auth/internal/features/auth"
 	"ms_auth/internal/features/user"
+	"shared/auth/domain/apiError"
 )
 
 type handlers struct {

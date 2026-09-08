@@ -2,12 +2,12 @@ package api
 
 import (
 	"log/slog"
-	"ms_goal/internal/core/cache"
 	"ms_goal/internal/core/config"
-	"ms_goal/internal/core/security"
-	"ms_goal/internal/core/transaction"
 	"ms_goal/internal/features/goal"
 	goaltransaction "ms_goal/internal/features/goal_transaction"
+	"shared/auth/security"
+	"shared/cache"
+	"shared/transaction"
 )
 
 type services struct {
@@ -23,7 +23,12 @@ func NewServices(
 	logger *slog.Logger,
 	producers *producers,
 ) (*services, error) {
-	cacheClient, err := cache.NewRedisCache(config.Cache.Addr, config.Cache.Password, config.Cache.Db, nil)
+	cacheClient, err := cache.NewRedisCache(
+		config.Base.Cache.Addr,
+		config.Base.Cache.Password,
+		config.Base.Cache.Db,
+		nil,
+	)
 
 	if err != nil {
 		return nil, err
@@ -31,7 +36,7 @@ func NewServices(
 
 	logger.Info("reddis connection pool established")
 
-	jwtService, err := security.NewService(config)
+	jwtService, err := security.NewService(config.Base)
 	if err != nil {
 		return nil, err
 	}

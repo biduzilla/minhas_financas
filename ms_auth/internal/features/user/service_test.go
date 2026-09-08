@@ -3,12 +3,12 @@ package user
 import (
 	"context"
 	"errors"
-	"ms_auth/internal/core/domain/apiError"
-	"ms_auth/internal/core/filters"
+	"shared/auth/domain/apiError"
+	"shared/utils/filters"
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type mockUserRepo struct {

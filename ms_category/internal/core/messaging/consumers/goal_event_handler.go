@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json/v2"
 	"log/slog"
-	"ms_category/internal/core/contexts"
-	"ms_category/internal/core/domain"
 	"ms_category/internal/core/messaging/events"
 	"ms_category/internal/features/category"
+	"shared/auth/contexts"
+	"shared/auth/domain"
 	"uuid"
 )
 

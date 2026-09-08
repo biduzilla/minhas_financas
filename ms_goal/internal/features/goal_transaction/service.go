@@ -2,10 +2,10 @@ package goaltransaction
 
 import (
 	"context"
-	"ms_goal/internal/core/cache"
-	"ms_goal/internal/core/domain/apiError"
-	"ms_goal/internal/core/filters"
-	"ms_goal/internal/core/validator"
+	"shared/auth/domain/apiError"
+	"shared/cache"
+	"shared/utils/filters"
+	"shared/validator"
 	"uuid"
 )
 

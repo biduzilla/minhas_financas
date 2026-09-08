@@ -1,9 +1,9 @@
 package api
 
 import (
-	"ms_goal/internal/core/domain/apiError"
 	"ms_goal/internal/features/goal"
 	goaltransaction "ms_goal/internal/features/goal_transaction"
+	"shared/auth/domain/apiError"
 )
 
 type handlers struct {

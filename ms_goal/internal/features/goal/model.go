@@ -2,8 +2,8 @@ package goal
 
 import (
 	"fmt"
-	"ms_goal/internal/core/domain/models"
-	"ms_goal/internal/core/validator"
+	"shared/auth/domain/models"
+	"shared/validator"
 	"time"
 	"uuid"
 )

@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"expvar"
 	"fmt"
-	"ms_auth/internal/core/domain/apiError"
-	"ms_auth/internal/core/metrics"
 	"ms_auth/internal/features/auth"
 	"ms_auth/internal/features/user"
 	"net/http"
+	"shared/auth/domain/apiError"
+	"shared/obs/metrics"
 
 	"github.com/go-chi/chi/v5"
 )

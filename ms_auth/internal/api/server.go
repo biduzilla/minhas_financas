@@ -6,10 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"ms_auth/internal/core/otel"
 	"net/http"
 	"os"
 	"os/signal"
+	"shared/obs/otel"
 	"syscall"
 	"time"
 
@@ -46,7 +46,7 @@ func (app *application) Server() error {
 	instrumentedHandler := otelhttp.NewHandler(mux, "ms_auth")
 
 	srv := newHTTPServer(
-		fmt.Sprintf(":%d", app.config.Server.Port),
+		fmt.Sprintf(":%d", app.config.Base.Server.Port),
 		instrumentedHandler,
 		app.Logger,
 	)

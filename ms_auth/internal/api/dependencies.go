@@ -1,9 +1,9 @@
 package api
 
 import (
-	"ms_auth/internal/core/domain/apiError"
-	"ms_auth/internal/core/middleware"
-	"ms_auth/internal/core/transaction"
+	"shared/auth/domain/apiError"
+	"shared/obs/middleware"
+	"shared/transaction"
 )
 
 type dependencies struct {
@@ -28,7 +28,7 @@ func (app *application) buildDependencies(shutdown chan struct{}) (*dependencies
 	handlers := NewHandlers(services, errHandler)
 	middleware := middleware.New(
 		errHandler,
-		app.config,
+		app.config.Base,
 		services.jwtService,
 		app.Logger,
 		shutdown,

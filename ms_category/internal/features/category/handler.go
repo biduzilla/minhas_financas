@@ -1,13 +1,13 @@
 package category
 
 import (
-	"ms_category/internal/core/domain/apiError"
-	"ms_category/internal/core/filters"
-	"ms_category/internal/core/handler"
-	"ms_category/internal/core/validator"
-	"ms_category/pkg/httpjson"
-	"ms_category/pkg/httputil"
 	"net/http"
+	"shared/auth/domain/apiError"
+	"shared/httpx/handler"
+	"shared/httpx/httpjson"
+	"shared/httpx/httputil"
+	"shared/utils/filters"
+	"shared/validator"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"

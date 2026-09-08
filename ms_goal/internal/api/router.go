@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"expvar"
 	"fmt"
-	"ms_goal/internal/core/domain/apiError"
-	"ms_goal/internal/core/metrics"
 	"ms_goal/internal/features/goal"
 	goaltransaction "ms_goal/internal/features/goal_transaction"
 	"net/http"
+	"shared/auth/domain/apiError"
+	"shared/obs/metrics"
 
 	"github.com/go-chi/chi/v5"
 )

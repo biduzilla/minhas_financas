@@ -2,12 +2,12 @@ package goal
 
 import (
 	"context"
-	"ms_goal/internal/core/cache"
-	"ms_goal/internal/core/contexts"
-	"ms_goal/internal/core/domain/apiError"
-	"ms_goal/internal/core/filters"
 	"ms_goal/internal/core/messaging/events"
-	"ms_goal/internal/core/validator"
+	"shared/auth/contexts"
+	"shared/auth/domain/apiError"
+	"shared/cache"
+	"shared/utils/filters"
+	"shared/validator"
 	"uuid"
 )
 

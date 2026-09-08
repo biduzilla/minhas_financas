@@ -1,13 +1,13 @@
 package goal
 
 import (
-	"ms_goal/internal/core/domain/apiError"
-	"ms_goal/internal/core/filters"
-	"ms_goal/internal/core/handler"
-	"ms_goal/internal/core/validator"
-	"ms_goal/pkg/httpjson"
-	"ms_goal/pkg/httputil"
 	"net/http"
+	"shared/auth/domain/apiError"
+	"shared/httpx/handler"
+	"shared/httpx/httpjson"
+	"shared/httpx/httputil"
+	"shared/utils/filters"
+	"shared/validator"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"

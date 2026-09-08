@@ -2,12 +2,12 @@ package api
 
 import (
 	"log/slog"
-	"ms_auth/internal/core/cache"
 	"ms_auth/internal/core/config"
 	"ms_auth/internal/core/security"
-	"ms_auth/internal/core/transaction"
 	"ms_auth/internal/features/auth"
 	"ms_auth/internal/features/user"
+	"shared/cache"
+	"shared/transaction"
 )
 
 type services struct {
@@ -22,7 +22,8 @@ func NewServices(
 	config config.Config,
 	logger *slog.Logger,
 ) (*services, error) {
-	cacheClient, err := cache.NewRedisCache(config.Cache.Addr, config.Cache.Password, config.Cache.Db, nil)
+	cacheClient, err := cache.NewRedisCache(config.Base.Cache.Addr,
+		config.Base.Cache.Password, config.Base.Cache.Db, nil)
 
 	if err != nil {
 		return nil, err

@@ -2,11 +2,12 @@ package user
 
 import (
 	"errors"
-	"ms_auth/internal/core/domain/models"
-	"ms_auth/internal/core/validator"
+	"shared/auth/domain/models"
+	"shared/validator"
 	"unicode"
 
-	"github.com/google/uuid"
+	"uuid"
+
 	"golang.org/x/crypto/bcrypt"
 )
 

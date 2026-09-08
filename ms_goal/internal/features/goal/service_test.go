@@ -7,9 +7,9 @@ import (
 	"time"
 	"uuid"
 
-	"ms_goal/internal/core/domain/apiError"
-	"ms_goal/internal/core/filters"
 	"ms_goal/internal/core/messaging/events"
+	"shared/auth/domain/apiError"
+	"shared/utils/filters"
 )
 
 type mockGoalRepo struct {

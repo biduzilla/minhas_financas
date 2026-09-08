@@ -2,8 +2,8 @@ package category
 
 import (
 	"fmt"
-	"ms_category/internal/core/domain/models"
-	"ms_category/internal/core/validator"
+	"shared/auth/domain/models"
+	"shared/validator"
 	"uuid"
 )
 

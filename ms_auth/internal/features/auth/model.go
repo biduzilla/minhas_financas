@@ -1,10 +1,10 @@
 package auth
 
 import (
-	"ms_auth/internal/core/domain/models"
+	"shared/auth/domain/models"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type RefreshToken struct {

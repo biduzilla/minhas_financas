@@ -1,13 +1,13 @@
 package user
 
 import (
-	"ms_auth/internal/core/domain/apiError"
-	"ms_auth/internal/core/filters"
-	"ms_auth/internal/core/handler"
-	"ms_auth/internal/core/validator"
-	"ms_auth/pkg/httpjson"
-	"ms_auth/pkg/httputil"
 	"net/http"
+	"shared/auth/domain/apiError"
+	"shared/httpx/handler"
+	"shared/httpx/httpjson"
+	"shared/httpx/httputil"
+	"shared/utils/filters"
+	"shared/validator"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"

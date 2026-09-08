@@ -3,10 +3,10 @@ package category
 import (
 	"context"
 	"fmt"
-	"ms_category/internal/core/cache"
-	"ms_category/internal/core/domain/apiError"
-	"ms_category/internal/core/filters"
-	"ms_category/internal/core/validator"
+	"shared/auth/domain/apiError"
+	"shared/cache"
+	"shared/utils/filters"
+	"shared/validator"
 	"uuid"
 )
 

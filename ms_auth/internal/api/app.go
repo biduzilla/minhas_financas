@@ -6,9 +6,10 @@ import (
 	"log/slog"
 	"ms_auth/internal/core/config"
 	"ms_auth/internal/core/database"
-	"ms_auth/internal/core/loggerutils"
 	"os"
 	"runtime"
+	shareddatabase "shared/db/database"
+	"shared/obs/loggerutils"
 	"sync"
 	"time"
 )
@@ -29,13 +30,13 @@ func NewApp(cfg config.Config) *application {
 
 	logger := slog.New(&loggerutils.ErrorAwareHandler{Handler: baseHandler})
 
-	db, err := database.OpenDB(cfg)
+	db, err := shareddatabase.OpenDB(cfg.Base)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil
 	}
 
-	if err := database.RunMigrations(cfg.DB.DSN, logger); err != nil {
+	if err := database.RunMigrations(cfg.Base.DB.DSN, logger); err != nil {
 		logger.Error("failed to run migrations", "error", err)
 		return nil
 	}

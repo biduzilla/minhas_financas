@@ -5,11 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"log/slog"
-	"ms_auth/internal/core/contexts"
-	"ms_auth/internal/core/domain/apiError"
-	"ms_auth/pkg/sqlformat"
+	"shared/auth/contexts"
+	"shared/auth/domain/apiError"
+	"shared/db/sqlformat"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type RefreshTokenRepository struct {
