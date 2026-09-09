@@ -2,6 +2,11 @@ package events
 
 import "uuid"
 
+const (
+	TransactionGoalCreatedTopic = "transaction_goal_created"
+	TransactionGoalDeletedTopic = "transaction_goal_deleted"
+)
+
 type GoalEvent struct {
 	ID     uuid.UUID `json:"id"`
 	Name   string    `json:"name"`

@@ -51,6 +51,11 @@ type service interface {
 		ctx context.Context,
 		id uuid.UUID,
 	) error
+
+	DeleteByTransactionId(
+		ctx context.Context,
+		transactionId uuid.UUID,
+	) error
 }
 
 func NewService(
@@ -151,5 +156,14 @@ func (s *GoalTransactionService) DeleteByGoalId(
 ) error {
 	return s.we.Execute(ctx, func(ctx context.Context) error {
 		return s.repo.DeleteByGoalId(ctx, id)
+	})
+}
+
+func (s *GoalTransactionService) DeleteByTransactionId(
+	ctx context.Context,
+	transactionId uuid.UUID,
+) error {
+	return s.we.Execute(ctx, func(ctx context.Context) error {
+		return s.repo.DeleteByTransactionId(ctx, transactionId)
 	})
 }

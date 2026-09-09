@@ -43,6 +43,10 @@ type repository interface {
 		ctx context.Context,
 		goalID uuid.UUID,
 	) error
+	DeleteByTransactionId(
+		ctx context.Context,
+		transactionId uuid.UUID,
+	) error
 }
 
 func parseConstraintError(err error) error {
@@ -344,6 +348,54 @@ func (r *GoalTransactionRepository) DeleteByGoalId(
 	params := map[string]any{
 		"goalID":  goalID,
 		"user_id": userAuth.GetID(),
+	}
+
+	query, args := sqlformat.NamedQuery(q, params)
+	r.logger.Info("query executed", "sql", sqlformat.MinifySQL(query))
+
+	tx := contexts.GetTx(ctx)
+	if tx == nil {
+		panic("transaction necessary for this operation")
+	}
+
+	result, err := tx.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return apiError.ErrRecordNotFound
+	}
+
+	return nil
+}
+
+func (r *GoalTransactionRepository) DeleteByTransactionId(
+	ctx context.Context,
+	transactionId uuid.UUID,
+) error {
+	userAuth := contexts.GetUser(ctx)
+
+	q := `
+        UPDATE goal_transactions
+        SET
+            deleted = true,
+            updated_at = NOW(),
+            updated_by = :user_id,
+            version = version + 1
+        WHERE
+            transaction_id = :transactionId
+            AND user_id = :user_id
+            AND deleted = false
+    `
+
+	params := map[string]any{
+		"transactionId": transactionId,
+		"user_id":       userAuth.GetID(),
 	}
 
 	query, args := sqlformat.NamedQuery(q, params)
