@@ -13,11 +13,15 @@ import (
 )
 
 type mockGoalRepo struct {
-	findAllFn  func(ctx context.Context, search string, status GoalStatus, f filters.Filters) ([]*Goal, filters.Metadata, error)
-	findByIdFn func(ctx context.Context, id uuid.UUID) (*Goal, error)
-	insertFn   func(ctx context.Context, model *Goal) error
-	updateFn   func(ctx context.Context, model *Goal) error
-	deleteFn   func(ctx context.Context, id uuid.UUID) error
+	findAllFn                  func(ctx context.Context, search string, status GoalStatus, f filters.Filters) ([]*Goal, filters.Metadata, error)
+	findByIdFn                 func(ctx context.Context, id uuid.UUID) (*Goal, error)
+	insertFn                   func(ctx context.Context, model *Goal) error
+	updateFn                   func(ctx context.Context, model *Goal) error
+	deleteFn                   func(ctx context.Context, id uuid.UUID) error
+	recalculateCurrentAmountFn func(
+		ctx context.Context,
+		id uuid.UUID,
+	) error
 }
 
 func (m *mockGoalRepo) FindAll(ctx context.Context, search string, status GoalStatus, f filters.Filters) ([]*Goal, filters.Metadata, error) {
@@ -51,6 +55,16 @@ func (m *mockGoalRepo) Update(ctx context.Context, model *Goal) error {
 func (m *mockGoalRepo) DeleteById(ctx context.Context, id uuid.UUID) error {
 	if m.deleteFn != nil {
 		return m.deleteFn(ctx, id)
+	}
+	return nil
+}
+
+func (m *mockGoalRepo) RecalculateCurrentAmount(
+	ctx context.Context,
+	id uuid.UUID,
+) error {
+	if m.recalculateCurrentAmountFn != nil {
+		return m.recalculateCurrentAmountFn(ctx, id)
 	}
 	return nil
 }

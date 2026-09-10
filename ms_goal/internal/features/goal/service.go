@@ -186,3 +186,12 @@ func (s *GoalService) DeleteById(
 		id, "", contexts.GetUser(ctx).GetID(),
 	))
 }
+
+func (s *GoalService) RecalculateCurrentAmount(
+	ctx context.Context,
+	id uuid.UUID,
+) error {
+	return s.we.Execute(ctx, func(ctx context.Context) error {
+		return s.repo.RecalculateCurrentAmount(ctx, id)
+	})
+}

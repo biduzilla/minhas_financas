@@ -50,6 +50,10 @@ type repository interface {
 	Insert(ctx context.Context, model *Goal) error
 	Update(ctx context.Context, model *Goal) error
 	DeleteById(ctx context.Context, id uuid.UUID) error
+	RecalculateCurrentAmount(
+		ctx context.Context,
+		id uuid.UUID,
+	) error
 }
 
 func (r *GoalRepository) FindAll(
@@ -342,6 +346,58 @@ func (r *GoalRepository) DeleteById(
 	}
 
 	result, err := tx.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return apiError.ErrRecordNotFound
+	}
+
+	return nil
+}
+
+func (r *GoalRepository) RecalculateCurrentAmount(
+	ctx context.Context,
+	id uuid.UUID,
+) error {
+	query := `
+		update goals
+		set current_amount = (
+			select coalesce(sum(gt.amount),0)
+			from goal_transactions gt
+			where gt.goal_id = $1
+				and gt.deleted = false
+		),
+		status = CASE
+            WHEN (
+                SELECT COALESCE(SUM(gt.amount), 0)
+                FROM goal_transactions gt
+                WHERE gt.goal_id = $1 AND gt.deleted = false
+            ) >= target_amount THEN 1  -- COMPLETED
+            WHEN deadline < NOW()::date THEN 2  -- EXPIRED
+            ELSE status
+        END,
+        updated_at = NOW(),
+        updated_by = $2,
+        version = version + 1
+        WHERE id = $1
+          AND user_id = $2
+          AND deleted = false
+	`
+
+	r.logger.Info("query executed", "sql", sqlformat.MinifySQL(query))
+
+	tx := contexts.GetTx(ctx)
+	if tx == nil {
+		panic("transaction necessary for this operation")
+	}
+
+	result, err := tx.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}

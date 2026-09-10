@@ -10,14 +10,22 @@ import (
 )
 
 type GoalTransactionService struct {
-	repo       repository
-	cache      cache.Cache
-	keyBuilder cache.KeyBuilder
-	we         WriteExecutor
+	repo        repository
+	cache       cache.Cache
+	keyBuilder  cache.KeyBuilder
+	we          WriteExecutor
+	goalService goalService
 }
 
 type WriteExecutor interface {
 	Execute(ctx context.Context, fn func(ctx context.Context) error) error
+}
+
+type goalService interface {
+	RecalculateCurrentAmount(
+		ctx context.Context,
+		id uuid.UUID,
+	) error
 }
 
 type service interface {
@@ -63,12 +71,14 @@ func NewService(
 	cache cache.Cache,
 	keyBuilder cache.KeyBuilder,
 	we WriteExecutor,
+	goalService goalService,
 ) *GoalTransactionService {
 	return &GoalTransactionService{
-		repo:       repo,
-		cache:      cache,
-		keyBuilder: keyBuilder,
-		we:         we,
+		repo:        repo,
+		cache:       cache,
+		keyBuilder:  keyBuilder,
+		we:          we,
+		goalService: goalService,
 	}
 }
 
@@ -123,7 +133,12 @@ func (s *GoalTransactionService) Insert(
 	}
 
 	return s.we.Execute(ctx, func(ctx context.Context) error {
-		return s.repo.Insert(ctx, model)
+		err := s.repo.Insert(ctx, model)
+		if err != nil {
+			return err
+		}
+
+		return s.goalService.RecalculateCurrentAmount(ctx, model.GoalID)
 	})
 }
 
@@ -166,4 +181,10 @@ func (s *GoalTransactionService) DeleteByTransactionId(
 	return s.we.Execute(ctx, func(ctx context.Context) error {
 		return s.repo.DeleteByTransactionId(ctx, transactionId)
 	})
+}
+
+func (s *GoalTransactionService) SetGoalService(
+	goalService goalService,
+) {
+	s.goalService = goalService
 }

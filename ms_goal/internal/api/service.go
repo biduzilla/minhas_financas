@@ -47,6 +47,7 @@ func NewServices(
 		gTd.cache,
 		gTd.keyBuilder,
 		gTd.executor,
+		nil,
 	)
 
 	gD := newWriteDeps("goals", tx, cacheClient)
@@ -58,6 +59,8 @@ func NewServices(
 		producers.goalProducer,
 		goalTService,
 	)
+
+	goalTService.SetGoalService(goalService)
 
 	return &services{
 		jwtService:      jwtService,
