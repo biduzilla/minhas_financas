@@ -26,7 +26,7 @@ func (app *application) Server() error {
 
 	shutdown := make(chan struct{})
 
-	shutdownTracer, err := otel.InitTracer("ms_transaction", app.Logger)
+	shutdownTracer, err := otel.InitTracer("ms_goal", app.Logger)
 	if err != nil {
 		return err
 	}

@@ -65,7 +65,7 @@ func (h *GoalHandler) Create(
 
 	defer span.End()
 
-	var dto GoalDTO
+	var dto CreateGoalDTO
 	if err := httputil.ReadJSON(w, r, &dto); err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, "Failed to read JSON")
@@ -77,7 +77,7 @@ func (h *GoalHandler) Create(
 		return
 	}
 
-	span.SetAttributes(attribute.String("goal.Name", *dto.Name))
+	span.SetAttributes(attribute.String("goal.Name", dto.Name))
 
 	model := dto.ToModel()
 
@@ -135,15 +135,18 @@ func (h *GoalHandler) FindAll(
 	v := validator.New()
 
 	s := httputil.ReadStringParam(r, "status", "")
-	status, err := ParseGoalStatus(s)
-	if err != nil {
-		h.errHandler.HandlerError(
-			w,
-			r,
-			apiError.NewBadRequestError(err))
-		return
+	if s != "" {
+		status, err := ParseGoalStatus(s)
+		if err != nil {
+			h.errHandler.HandlerError(
+				w,
+				r,
+				apiError.NewBadRequestError(err))
+			return
+		}
+		input.status = status
 	}
-	input.status = status
+
 	input.Filters.Page = httputil.ReadIntParam(r, "page", 1, v)
 	input.Filters.PageSize = httputil.ReadIntParam(r, "page_size", 20, v)
 	input.Filters.Sort = httputil.ReadStringParam(r, "sort", "id")

@@ -34,6 +34,10 @@ func main() {
 
 	cfg.Base.Otel.Port = "localhost:4318"
 
+	cfg.Kafka.Brokers = []string{"localhost:9094"}
+	cfg.Kafka.GroupID = "ms_category_group"
+	cfg.Clients.TransactionURL = "http://localhost:4002/v1/transactions"
+
 	app, err := api.NewApp(cfg)
 	if err != nil {
 		slog.Error("failed to initialize app")

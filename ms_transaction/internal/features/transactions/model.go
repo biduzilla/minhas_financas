@@ -18,7 +18,6 @@ type Transaction struct {
 }
 
 type TransactionDTO struct {
-	models.BaseModel
 	ID          *uuid.UUID `json:"id"`
 	Amount      *float64   `json:"amount"`
 	CategoryID  *uuid.UUID `json:"category_id"`

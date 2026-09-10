@@ -4,6 +4,7 @@ import (
 	"context"
 	"ms_transaction/internal/core/httpclient/categories"
 	"ms_transaction/internal/core/messaging/events"
+	"shared/auth/contexts"
 	"shared/auth/domain/apiError"
 	"shared/cache"
 	"shared/utils/filters"
@@ -140,8 +141,9 @@ func (s *TransactionService) Insert(
 	}
 
 	if category.GoalID != nil {
+		userAuth := contexts.GetUser(ctx)
 		err := s.transactionProducer.PublishTransactionGoalCreated(ctx, events.NewTransactionEvent(
-			model.ID, model.Amount, model.UserID, *category.GoalID,
+			model.ID, model.Amount, userAuth.GetID(), *category.GoalID,
 		))
 		if err != nil {
 			return err

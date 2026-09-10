@@ -13,7 +13,7 @@ func main() {
 	cfg := config.Config{}
 	cfg.Base.Env = "development"
 
-	cfg.Base.Server.Port = 4003
+	cfg.Base.Server.Port = 4004
 	cfg.Base.Server.Timeout = 5 * time.Second
 
 	cfg.Base.DB.DSN = "postgres://api_user:api_password@localhost:5432/api_db?sslmode=disable"
@@ -33,6 +33,9 @@ func main() {
 	cfg.Base.Cache.Db = 0
 
 	cfg.Base.Otel.Port = "localhost:4318"
+
+	cfg.Kafka.Brokers = []string{"localhost:9094"}
+	cfg.Kafka.GroupID = "ms_goal_group"
 
 	app, err := api.NewApp(cfg)
 	if app == nil || err != nil {

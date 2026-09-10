@@ -60,6 +60,7 @@ func (h *GoalEventHandler) handleCreated(ctx context.Context, event events.GoalE
 	model := category.Category{
 		GoalID: &event.ID,
 		Name:   event.Name,
+		UserID: event.UserID,
 	}
 	return h.categoryService.Insert(ctx, &model)
 }

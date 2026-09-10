@@ -103,8 +103,8 @@ func (r *TransactionRepository) FindAll(
     FROM transactions t
 	left join categories c
 		on c.id = t.category_id
-	where deleted = false
-        AND user_id = :userID
+	where t.deleted = false
+        AND t.user_id = :userID
         AND (:startDate::timestamptz IS NULL OR t.created_at >= :startDate)
         AND (:endDate::timestamptz IS NULL OR t.created_at <= :endDate)
 		AND (:categoryID::uuid IS NULL OR t.category_id = :categoryID)
