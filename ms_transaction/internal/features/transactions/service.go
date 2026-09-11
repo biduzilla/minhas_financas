@@ -236,7 +236,7 @@ func (s *TransactionService) Summary(
 		catMap[c.ID] = categoryInfo{Name: c.Name, Type: c.Type}
 	}
 
-	var total float64
+	var total, totalInput, totalOutput float64
 	var count int64
 	items := make([]SummaryItemDTO, len(rows))
 	for i, row := range rows {
@@ -244,6 +244,14 @@ func (s *TransactionService) Summary(
 		count += row.Count
 
 		info := catMap[row.CategoryID]
+
+		switch info.Type {
+		case "input":
+			totalInput += row.Total
+		case "output":
+			totalOutput += row.Total
+		}
+
 		items[i] = SummaryItemDTO{
 			CategoryID:   row.CategoryID,
 			CategoryName: info.Name,
@@ -253,14 +261,19 @@ func (s *TransactionService) Summary(
 		}
 	}
 
+	balance := totalInput - totalOutput
+
 	return &SummaryDTO{
 		Period: PeriodDTO{
 			StartDate: query.StartDate,
 			EndDate:   query.EndDate,
 		},
-		Total:      total,
-		Count:      count,
-		ByCategory: items,
+		Total:       total,
+		TotalInput:  totalInput,
+		TotalOutput: totalOutput,
+		Balance:     balance,
+		Count:       count,
+		ByCategory:  items,
 	}, nil
 }
 

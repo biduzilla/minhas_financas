@@ -45,10 +45,13 @@ type SummaryQuery struct {
 }
 
 type SummaryDTO struct {
-	Period     PeriodDTO        `json:"period"`
-	Total      float64          `json:"total"`
-	Count      int64            `json:"count"`
-	ByCategory []SummaryItemDTO `json:"by_category"`
+	Period      PeriodDTO        `json:"period"`
+	Total       float64          `json:"total"`
+	TotalInput  float64          `json:"total_input"`
+	TotalOutput float64          `json:"total_output"`
+	Balance     float64          `json:"balance"`
+	Count       int64            `json:"count"`
+	ByCategory  []SummaryItemDTO `json:"by_category"`
 }
 
 type PeriodDTO struct {

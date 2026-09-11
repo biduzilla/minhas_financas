@@ -247,7 +247,7 @@ func (s *GoalService) GenerateReport(
 	}
 
 	var lastContribution *time.Time
-	if count > 0 && !lastDate.IsZero() {
+	if count > 0 && lastDate != nil {
 		lastContribution = lastDate
 	}
 
