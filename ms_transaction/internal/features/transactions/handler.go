@@ -2,6 +2,7 @@ package transactions
 
 import (
 	"net/http"
+	"uuid"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -235,4 +236,63 @@ func parseTransactionQuery(r *http.Request) (transactionQuery, error) {
 	}
 
 	return query, nil
+}
+
+func (h *TransactionHandler) Summary(w http.ResponseWriter, r *http.Request) {
+	tracer := otel.Tracer("ms_transaction/internal/features/transactions")
+	ctx, span := tracer.Start(r.Context(), "TransactionHandler.Summary")
+	defer span.End()
+
+	query, err := parseSummaryQuery(r)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "Invalid query parameters")
+		h.errHandler.HandlerError(w, r, err)
+		return
+	}
+
+	summary, err := h.service.Summary(ctx, query)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "Failed to generate summary")
+		h.errHandler.HandlerError(w, r, err)
+		return
+	}
+
+	handler.Respond(w, r, http.StatusOK, summary, nil, h.errHandler)
+}
+
+func parseSummaryQuery(r *http.Request) (SummaryQuery, error) {
+	v := validator.New()
+
+	q := SummaryQuery{
+		StartDate: httputil.ReadDateParam(r, "start_date", v),
+		EndDate:   httputil.ReadDateParam(r, "end_date", v),
+	}
+
+	catStr := httputil.ReadStringParam(r, "category_id", "")
+	if catStr != "" {
+		id, err := uuid.Parse(catStr)
+		if err != nil {
+			v.AddError("category_id", "must be a valid uuid")
+		} else {
+			q.CategoryID = &id
+		}
+	}
+
+	typeStr := httputil.ReadStringParam(r, "type", "")
+	if typeStr != "" {
+		ct, err := parseCategoryType(typeStr)
+		if err != nil {
+			v.AddError("type", "must be 'input' or 'output'")
+		} else {
+			q.Type = &ct
+		}
+	}
+
+	if !v.Valid() {
+		return SummaryQuery{}, apiError.NewValidationError(v.Errors)
+	}
+
+	return q, nil
 }

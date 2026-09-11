@@ -37,6 +37,33 @@ func (m *Transaction) ToDTO() TransactionDTO {
 	}
 }
 
+type SummaryQuery struct {
+	StartDate  *time.Time
+	EndDate    *time.Time
+	Type       *categoryType
+	CategoryID *uuid.UUID
+}
+
+type SummaryDTO struct {
+	Period     PeriodDTO        `json:"period"`
+	Total      float64          `json:"total"`
+	Count      int64            `json:"count"`
+	ByCategory []SummaryItemDTO `json:"by_category"`
+}
+
+type PeriodDTO struct {
+	StartDate *time.Time `json:"start_date,omitempty"`
+	EndDate   *time.Time `json:"end_date,omitempty"`
+}
+
+type SummaryItemDTO struct {
+	CategoryID   uuid.UUID `json:"category_id"`
+	CategoryName string    `json:"category_name"`
+	Type         string    `json:"type"`
+	Total        float64   `json:"total"`
+	Count        int64     `json:"count"`
+}
+
 func (d TransactionDTO) ToModel() *Transaction {
 	var model Transaction
 

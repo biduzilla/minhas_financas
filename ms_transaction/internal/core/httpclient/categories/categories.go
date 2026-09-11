@@ -2,9 +2,11 @@ package categories
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"shared/auth/domain/apiError"
 	"shared/httpx/httpclient"
+	"shared/utils/filters"
 	"uuid"
 )
 
@@ -19,11 +21,16 @@ func NewClient(cfg httpclient.Config) *HTTPClient {
 }
 
 type CategoryDTO struct {
-	ID     *uuid.UUID `json:"id,omitempty"`
-	UserID *uuid.UUID `json:"user_id,omitempty"`
-	Name   *string    `json:"name,omitempty"`
-	Type   *string    `json:"type"`
+	ID     uuid.UUID  `json:"id,omitempty"`
+	UserID uuid.UUID  `json:"user_id,omitempty"`
+	Name   string     `json:"name,omitempty"`
+	Type   string     `json:"type"`
 	GoalID *uuid.UUID `json:"goal_id,omitempty"`
+}
+
+type CategoryListResponse struct {
+	Content  []CategoryDTO    `json:"content"`
+	Metadata filters.Metadata `json:"metadata"`
 }
 
 func (c *HTTPClient) FindByID(
@@ -53,4 +60,27 @@ func (c *HTTPClient) FindByID(
 	}
 
 	return response, nil
+}
+
+func (c *HTTPClient) FindAll(
+	ctx context.Context,
+	page int,
+	pageSize int,
+) ([]CategoryDTO, error) {
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 100
+	}
+
+	path := fmt.Sprintf("/?page=%d&page_size=%d", page, pageSize)
+
+	var response CategoryListResponse
+	err := c.base.Get(ctx, path, &response, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Content, nil
 }

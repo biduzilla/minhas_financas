@@ -31,6 +31,12 @@ func NewRepository(
 	}
 }
 
+type CategoryAggregate struct {
+	CategoryID uuid.UUID
+	Total      float64
+	Count      int64
+}
+
 type transactionQuery struct {
 	StartDate  *time.Time
 	EndDate    *time.Time
@@ -79,6 +85,11 @@ type repository interface {
 		ctx context.Context,
 		id uuid.UUID,
 	) error
+
+	AggregateByCategory(
+		ctx context.Context,
+		query SummaryQuery,
+	) ([]*CategoryAggregate, error)
 }
 
 func (r *TransactionRepository) FindAll(
@@ -417,4 +428,63 @@ func (r *TransactionRepository) DeleteByCategoryId(
 	}
 
 	return nil
+}
+
+func (r *TransactionRepository) AggregateByCategory(
+	ctx context.Context,
+	query SummaryQuery,
+) ([]*CategoryAggregate, error) {
+	userAuth := contexts.GetUser(ctx)
+
+	q := `
+        SELECT
+            t.category_id,
+            SUM(t.amount) AS total,
+            COUNT(*)      AS count
+        FROM transactions t
+        LEFT JOIN categories c ON c.id = t.category_id
+        WHERE t.deleted = false
+          AND t.user_id = :userID
+          AND (:startDate::timestamptz IS NULL OR t.created_at >= :startDate)
+          AND (:endDate::timestamptz IS NULL OR t.created_at <= :endDate)
+          AND (:categoryID::uuid IS NULL OR t.category_id = :categoryID)
+          AND (:type::integer IS NULL OR c.type = :type)
+        GROUP BY t.category_id
+        ORDER BY total DESC
+    `
+
+	params := map[string]any{
+		"userID":     userAuth.GetID(),
+		"startDate":  query.StartDate,
+		"endDate":    query.EndDate,
+		"categoryID": nullUUIDPtr(query.CategoryID),
+		"type":       query.Type,
+	}
+
+	q, args := sqlformat.NamedQuery(q, params)
+	r.logger.Info("query executed", "sql", sqlformat.MinifySQL(q))
+
+	rows, err := r.db.QueryContext(ctx, q, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	results := make([]*CategoryAggregate, 0)
+	for rows.Next() {
+		var agg CategoryAggregate
+		if err := rows.Scan(&agg.CategoryID, &agg.Total, &agg.Count); err != nil {
+			return nil, err
+		}
+		results = append(results, &agg)
+	}
+
+	return results, rows.Err()
+}
+
+func nullUUIDPtr(id *uuid.UUID) *uuid.UUID {
+	if id == nil || *id == uuid.Nil() {
+		return nil
+	}
+	return id
 }

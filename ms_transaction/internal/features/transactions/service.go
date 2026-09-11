@@ -26,6 +26,12 @@ type categoryClient interface {
 		ctx context.Context,
 		id uuid.UUID,
 	) (categories.CategoryDTO, error)
+
+	FindAll(
+		ctx context.Context,
+		page int,
+		pageSize int,
+	) ([]categories.CategoryDTO, error)
 }
 
 type WriteExecutor interface {
@@ -51,6 +57,10 @@ type service interface {
 	Update(ctx context.Context, model *Transaction) error
 	DeleteById(ctx context.Context, id uuid.UUID) error
 	DeleteByCategoryId(ctx context.Context, id uuid.UUID) error
+	Summary(
+		ctx context.Context,
+		query SummaryQuery,
+	) (*SummaryDTO, error)
 }
 
 func NewService(
@@ -200,6 +210,58 @@ func (s *TransactionService) DeleteById(
 	}
 
 	return nil
+}
+
+func (s *TransactionService) Summary(
+	ctx context.Context,
+	query SummaryQuery,
+) (*SummaryDTO, error) {
+	rows, err := s.repo.AggregateByCategory(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	categories, err := s.categoryClient.FindAll(ctx, 1, 100)
+	if err != nil {
+		return nil, err
+	}
+
+	type categoryInfo struct {
+		Name string
+		Type string
+	}
+
+	catMap := make(map[uuid.UUID]categoryInfo, len(categories))
+	for _, c := range categories {
+		catMap[c.ID] = categoryInfo{Name: c.Name, Type: c.Type}
+	}
+
+	var total float64
+	var count int64
+	items := make([]SummaryItemDTO, len(rows))
+	for i, row := range rows {
+		total += row.Total
+		count += row.Count
+
+		info := catMap[row.CategoryID]
+		items[i] = SummaryItemDTO{
+			CategoryID:   row.CategoryID,
+			CategoryName: info.Name,
+			Type:         info.Type,
+			Total:        row.Total,
+			Count:        row.Count,
+		}
+	}
+
+	return &SummaryDTO{
+		Period: PeriodDTO{
+			StartDate: query.StartDate,
+			EndDate:   query.EndDate,
+		},
+		Total:      total,
+		Count:      count,
+		ByCategory: items,
+	}, nil
 }
 
 func (s *TransactionService) DeleteByCategoryId(
