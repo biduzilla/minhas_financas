@@ -365,6 +365,7 @@ func (r *GoalRepository) RecalculateCurrentAmount(
 	ctx context.Context,
 	id uuid.UUID,
 ) error {
+	userAuth := contexts.GetUser(ctx)
 	query := `
 		update goals
 		set current_amount = (
@@ -397,7 +398,7 @@ func (r *GoalRepository) RecalculateCurrentAmount(
 		panic("transaction necessary for this operation")
 	}
 
-	result, err := tx.ExecContext(ctx, query, id)
+	result, err := tx.ExecContext(ctx, query, id, userAuth.GetID())
 	if err != nil {
 		return err
 	}

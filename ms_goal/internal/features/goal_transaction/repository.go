@@ -51,7 +51,7 @@ type repository interface {
 	AggregateByGoal(
 		ctx context.Context,
 		id uuid.UUID,
-	) (float64, int, time.Time, error)
+	) (float64, int, *time.Time, error)
 }
 
 func parseConstraintError(err error) error {
@@ -430,7 +430,7 @@ func (r *GoalTransactionRepository) DeleteByTransactionId(
 func (r *GoalTransactionRepository) AggregateByGoal(
 	ctx context.Context,
 	id uuid.UUID,
-) (float64, int, time.Time, error) {
+) (float64, int, *time.Time, error) {
 	userAuth := contexts.GetUser(ctx)
 	query := `
 		select coalesce(sum(amount),0), count(*), max(created_at)
@@ -442,7 +442,7 @@ func (r *GoalTransactionRepository) AggregateByGoal(
 
 	var total float64
 	var count int
-	var lastDate time.Time
+	var lastDate *time.Time
 	err := r.db.QueryRowContext(ctx, query, id, userAuth.GetID()).Scan(
 		&total,
 		&count,
@@ -450,9 +450,9 @@ func (r *GoalTransactionRepository) AggregateByGoal(
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return 0.0, 0, time.Time{}, apiError.ErrRecordNotFound
+			return 0.0, 0, nil, apiError.ErrRecordNotFound
 		}
-		return 0.0, 0, time.Time{}, err
+		return 0.0, 0, nil, err
 	}
 
 	return total, count, lastDate, nil

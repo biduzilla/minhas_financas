@@ -143,7 +143,7 @@ type mockGoalTransactionService struct {
 	aggregateByGoalFn func(
 		ctx context.Context,
 		goalID uuid.UUID,
-	) (float64, int, time.Time, error)
+	) (float64, int, *time.Time, error)
 }
 
 func (m *mockGoalTransactionService) DeleteByGoalId(ctx context.Context, goalId uuid.UUID) error {
@@ -153,11 +153,11 @@ func (m *mockGoalTransactionService) DeleteByGoalId(ctx context.Context, goalId 
 	return nil
 }
 
-func (m *mockGoalTransactionService) AggregateByGoal(ctx context.Context, goalId uuid.UUID) (float64, int, time.Time, error) {
+func (m *mockGoalTransactionService) AggregateByGoal(ctx context.Context, goalId uuid.UUID) (float64, int, *time.Time, error) {
 	if m.aggregateByGoalFn != nil {
 		return m.aggregateByGoalFn(ctx, goalId)
 	}
-	return 0, 0.0, time.Time{}, nil
+	return 0, 0.0, nil, nil
 }
 
 func newValidGoal() *Goal {

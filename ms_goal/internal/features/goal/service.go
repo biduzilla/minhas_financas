@@ -46,7 +46,7 @@ type gtService interface {
 	AggregateByGoal(
 		ctx context.Context,
 		id uuid.UUID,
-	) (float64, int, time.Time, error)
+	) (float64, int, *time.Time, error)
 }
 type service interface {
 	FindByID(
@@ -248,7 +248,7 @@ func (s *GoalService) GenerateReport(
 
 	var lastContribution *time.Time
 	if count > 0 && !lastDate.IsZero() {
-		lastContribution = &lastDate
+		lastContribution = lastDate
 	}
 
 	return &GoalReportDTO{

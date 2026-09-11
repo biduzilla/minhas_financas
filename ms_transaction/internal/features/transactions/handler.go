@@ -204,40 +204,6 @@ func (h *TransactionHandler) DeleteByCategoryId(w http.ResponseWriter, r *http.R
 	handler.Respond(w, r, http.StatusNoContent, nil, nil, h.errHandler)
 }
 
-func parseTransactionQuery(r *http.Request) (transactionQuery, error) {
-	v := validator.New()
-
-	f := filters.Filters{
-		Page:         httputil.ReadIntParam(r, "page", 1, v),
-		PageSize:     httputil.ReadIntParam(r, "page_size", 20, v),
-		Sort:         httputil.ReadStringParam(r, "sort", "id"),
-		SortSafelist: []string{"id", "amount", "-id", "-amount"},
-	}
-
-	if filters.ValidateFilters(v, f); !v.Valid() {
-		return transactionQuery{}, apiError.NewValidationError(v.Errors)
-	}
-
-	query := transactionQuery{
-		Filters:    f,
-		StartDate:  httputil.ReadDateParam(r, "start_date", v),
-		EndDate:    httputil.ReadDateParam(r, "end_date", v),
-		CategoryID: httputil.ReadUUIDParam(r, "category_id", v)}
-
-	typeStr := httputil.ReadStringParam(r, "type", "")
-	if typeStr != "" {
-		ct, err := parseCategoryType(typeStr)
-		if err != nil {
-			return transactionQuery{}, apiError.NewValidationError(map[string]string{
-				"type": "must be 'entrada' or 'saida'",
-			})
-		}
-		query.Type = &ct
-	}
-
-	return query, nil
-}
-
 func (h *TransactionHandler) Summary(w http.ResponseWriter, r *http.Request) {
 	tracer := otel.Tracer("ms_transaction/internal/features/transactions")
 	ctx, span := tracer.Start(r.Context(), "TransactionHandler.Summary")
@@ -295,4 +261,38 @@ func parseSummaryQuery(r *http.Request) (SummaryQuery, error) {
 	}
 
 	return q, nil
+}
+
+func parseTransactionQuery(r *http.Request) (transactionQuery, error) {
+	v := validator.New()
+
+	f := filters.Filters{
+		Page:         httputil.ReadIntParam(r, "page", 1, v),
+		PageSize:     httputil.ReadIntParam(r, "page_size", 20, v),
+		Sort:         httputil.ReadStringParam(r, "sort", "id"),
+		SortSafelist: []string{"id", "amount", "-id", "-amount"},
+	}
+
+	if filters.ValidateFilters(v, f); !v.Valid() {
+		return transactionQuery{}, apiError.NewValidationError(v.Errors)
+	}
+
+	query := transactionQuery{
+		Filters:    f,
+		StartDate:  httputil.ReadDateParam(r, "start_date", v),
+		EndDate:    httputil.ReadDateParam(r, "end_date", v),
+		CategoryID: httputil.ReadUUIDParam(r, "category_id", v)}
+
+	typeStr := httputil.ReadStringParam(r, "type", "")
+	if typeStr != "" {
+		ct, err := parseCategoryType(typeStr)
+		if err != nil {
+			return transactionQuery{}, apiError.NewValidationError(map[string]string{
+				"type": "must be 'entrada' or 'saida'",
+			})
+		}
+		query.Type = &ct
+	}
+
+	return query, nil
 }

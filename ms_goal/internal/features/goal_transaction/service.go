@@ -69,7 +69,7 @@ type service interface {
 	AggregateByGoal(
 		ctx context.Context,
 		id uuid.UUID,
-	) (float64, int, time.Time, error)
+	) (float64, int, *time.Time, error)
 }
 
 func NewService(
@@ -192,7 +192,7 @@ func (s *GoalTransactionService) DeleteByTransactionId(
 func (s *GoalTransactionService) AggregateByGoal(
 	ctx context.Context,
 	id uuid.UUID,
-) (float64, int, time.Time, error) {
+) (float64, int, *time.Time, error) {
 	return s.repo.AggregateByGoal(ctx, id)
 }
 
