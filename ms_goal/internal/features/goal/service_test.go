@@ -139,7 +139,11 @@ func (m *mockGoalProducer) PublishGoalDeleted(ctx context.Context, event events.
 }
 
 type mockGoalTransactionService struct {
-	deleteByGoalIdFn func(ctx context.Context, goalId uuid.UUID) error
+	deleteByGoalIdFn  func(ctx context.Context, goalId uuid.UUID) error
+	aggregateByGoalFn func(
+		ctx context.Context,
+		goalID uuid.UUID,
+	) (float64, int, time.Time, error)
 }
 
 func (m *mockGoalTransactionService) DeleteByGoalId(ctx context.Context, goalId uuid.UUID) error {
@@ -147,6 +151,13 @@ func (m *mockGoalTransactionService) DeleteByGoalId(ctx context.Context, goalId 
 		return m.deleteByGoalIdFn(ctx, goalId)
 	}
 	return nil
+}
+
+func (m *mockGoalTransactionService) AggregateByGoal(ctx context.Context, goalId uuid.UUID) (float64, int, time.Time, error) {
+	if m.aggregateByGoalFn != nil {
+		return m.aggregateByGoalFn(ctx, goalId)
+	}
+	return 0, 0.0, time.Time{}, nil
 }
 
 func newValidGoal() *Goal {

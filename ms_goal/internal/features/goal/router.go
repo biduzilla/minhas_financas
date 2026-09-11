@@ -34,6 +34,7 @@ func (r *GoalRouter) Routes(router chi.Router) {
 			router.Post("/", r.handler.Create)
 			router.Get("/{id}", r.handler.FindById)
 			router.Get("/", r.handler.FindAll)
+			router.Get("/report/{id}", r.handler.GenerateReport)
 			router.Put("/{id}", r.handler.Update)
 			router.Delete("/{id}", r.handler.DeleteById)
 		})

@@ -54,6 +54,11 @@ type goalHandler interface {
 		w http.ResponseWriter,
 		r *http.Request,
 	)
+
+	GenerateReport(
+		w http.ResponseWriter,
+		r *http.Request,
+	)
 }
 
 func (h *GoalHandler) Create(
@@ -115,6 +120,31 @@ func (h *GoalHandler) FindById(
 	}
 
 	handler.Respond(w, r, http.StatusOK, model.ToDTO(), nil, h.errHandler)
+}
+
+func (h *GoalHandler) GenerateReport(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	tracer := otel.Tracer("ms_goal/internal/features/goal")
+	ctx, span := tracer.Start(r.Context(), "GoalHandler.GenerateReport")
+	defer span.End()
+
+	id, ok := handler.ParseUUID(w, r, h.errHandler)
+	if !ok {
+		span.SetStatus(codes.Error, "invalid id")
+		return
+	}
+
+	model, err := h.service.GenerateReport(ctx, id)
+	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "Failed to generate report")
+		h.errHandler.HandlerError(w, r, err)
+		return
+	}
+
+	handler.Respond(w, r, http.StatusOK, model, nil, h.errHandler)
 }
 
 func (h *GoalHandler) FindAll(

@@ -6,6 +6,7 @@ import (
 	"shared/cache"
 	"shared/utils/filters"
 	"shared/validator"
+	"time"
 	"uuid"
 )
 
@@ -64,6 +65,11 @@ type service interface {
 		ctx context.Context,
 		transactionId uuid.UUID,
 	) error
+
+	AggregateByGoal(
+		ctx context.Context,
+		id uuid.UUID,
+	) (float64, int, time.Time, error)
 }
 
 func NewService(
@@ -181,6 +187,13 @@ func (s *GoalTransactionService) DeleteByTransactionId(
 	return s.we.Execute(ctx, func(ctx context.Context) error {
 		return s.repo.DeleteByTransactionId(ctx, transactionId)
 	})
+}
+
+func (s *GoalTransactionService) AggregateByGoal(
+	ctx context.Context,
+	id uuid.UUID,
+) (float64, int, time.Time, error) {
+	return s.repo.AggregateByGoal(ctx, id)
 }
 
 func (s *GoalTransactionService) SetGoalService(

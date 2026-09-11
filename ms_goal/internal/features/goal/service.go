@@ -8,6 +8,7 @@ import (
 	"shared/cache"
 	"shared/utils/filters"
 	"shared/validator"
+	"time"
 	"uuid"
 )
 
@@ -41,6 +42,11 @@ type gtService interface {
 		ctx context.Context,
 		id uuid.UUID,
 	) error
+
+	AggregateByGoal(
+		ctx context.Context,
+		id uuid.UUID,
+	) (float64, int, time.Time, error)
 }
 type service interface {
 	FindByID(
@@ -69,6 +75,11 @@ type service interface {
 		ctx context.Context,
 		id uuid.UUID,
 	) error
+
+	GenerateReport(
+		ctx context.Context,
+		goalID uuid.UUID,
+	) (*GoalReportDTO, error)
 }
 
 func NewService(
@@ -194,4 +205,59 @@ func (s *GoalService) RecalculateCurrentAmount(
 	return s.we.Execute(ctx, func(ctx context.Context) error {
 		return s.repo.RecalculateCurrentAmount(ctx, id)
 	})
+}
+
+func (s *GoalService) GenerateReport(
+	ctx context.Context,
+	goalID uuid.UUID,
+) (*GoalReportDTO, error) {
+	goal, err := s.FindByID(ctx, goalID)
+	if err != nil {
+		return nil, err
+	}
+
+	total, count, lastDate, err := s.gtService.
+		AggregateByGoal(ctx, goalID)
+	if err != nil {
+		return nil, err
+	}
+
+	progress := 0.0
+	if goal.TargetAmount > 0 {
+		progress = float64(total) / float64(goal.TargetAmount) * 100
+		if progress > 100 {
+			progress = 100
+		}
+	}
+
+	dto := goal.ToDTO()
+	remainingAmount := float64(goal.TargetAmount) - total
+	if remainingAmount < 0 {
+		remainingAmount = 0
+	}
+
+	valuePerMonth := 0.0
+	now := time.Now()
+
+	if remainingAmount > 0 && goal.Deadline.After(now) {
+		monthsRemaining := goal.Deadline.Sub(now).Hours() / (24 * 30)
+		if monthsRemaining > 0 {
+			valuePerMonth = remainingAmount / monthsRemaining
+		}
+	}
+
+	var lastContribution *time.Time
+	if count > 0 && !lastDate.IsZero() {
+		lastContribution = &lastDate
+	}
+
+	return &GoalReportDTO{
+		Goal:              &dto,
+		TotalContributed:  float64(total),
+		Progress:          progress,
+		RemainingAmount:   remainingAmount,
+		TransactionsCount: count,
+		LastContribution:  lastContribution,
+		ValuePerMonth:     valuePerMonth,
+	}, nil
 }

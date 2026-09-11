@@ -78,6 +78,16 @@ type GoalDTO struct {
 	CreatedAt     *time.Time `json:"created_at"`
 }
 
+type GoalReportDTO struct {
+	Goal              *GoalDTO   `json:"goal"`
+	TotalContributed  float64    `json:"total_contributed"`
+	Progress          float64    `json:"progress"`
+	ValuePerMonth     float64    `json:"value_per_month"`
+	RemainingAmount   float64    `json:"remaining_amount"`
+	TransactionsCount int        `json:"transactions_count"`
+	LastContribution  *time.Time `json:"last_contribution,omitempty"`
+}
+
 func (d CreateGoalDTO) ToModel() *Goal {
 	return &Goal{
 		Name:         d.Name,

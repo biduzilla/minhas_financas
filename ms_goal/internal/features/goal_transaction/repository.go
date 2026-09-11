@@ -10,6 +10,7 @@ import (
 	"shared/auth/domain/apiError"
 	"shared/db/sqlformat"
 	"shared/utils/filters"
+	"time"
 	"uuid"
 
 	"github.com/lib/pq"
@@ -47,6 +48,10 @@ type repository interface {
 		ctx context.Context,
 		transactionId uuid.UUID,
 	) error
+	AggregateByGoal(
+		ctx context.Context,
+		id uuid.UUID,
+	) (float64, int, time.Time, error)
 }
 
 func parseConstraintError(err error) error {
@@ -420,6 +425,37 @@ func (r *GoalTransactionRepository) DeleteByTransactionId(
 	}
 
 	return nil
+}
+
+func (r *GoalTransactionRepository) AggregateByGoal(
+	ctx context.Context,
+	id uuid.UUID,
+) (float64, int, time.Time, error) {
+	userAuth := contexts.GetUser(ctx)
+	query := `
+		select coalesce(sum(amount),0), count(*), max(created_at)
+		from goal_transactions
+		WHERE goal_id = $1 AND user_id = $2 AND deleted = false
+	`
+
+	r.logger.Info("query executed", "sql", sqlformat.MinifySQL(query))
+
+	var total float64
+	var count int
+	var lastDate time.Time
+	err := r.db.QueryRowContext(ctx, query, id, userAuth.GetID()).Scan(
+		&total,
+		&count,
+		&lastDate,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0.0, 0, time.Time{}, apiError.ErrRecordNotFound
+		}
+		return 0.0, 0, time.Time{}, err
+	}
+
+	return total, count, lastDate, nil
 }
 
 func nullUUID(id uuid.UUID) *uuid.UUID {
