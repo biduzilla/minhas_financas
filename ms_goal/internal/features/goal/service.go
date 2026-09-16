@@ -222,29 +222,12 @@ func (s *GoalService) GenerateReport(
 		return nil, err
 	}
 
-	progress := 0.0
-	if goal.TargetAmount > 0 {
-		progress = float64(total) / float64(goal.TargetAmount) * 100
-		if progress > 100 {
-			progress = 100
-		}
-	}
+	progress := goal.Progress()
 
 	dto := goal.ToDTO()
-	remainingAmount := float64(goal.TargetAmount) - total
-	if remainingAmount < 0 {
-		remainingAmount = 0
-	}
+	remainingAmount := goal.RemainingAmount()
 
-	valuePerMonth := 0.0
-	now := time.Now()
-
-	if remainingAmount > 0 && goal.Deadline.After(now) {
-		monthsRemaining := goal.Deadline.Sub(now).Hours() / (24 * 30)
-		if monthsRemaining > 0 {
-			valuePerMonth = remainingAmount / monthsRemaining
-		}
-	}
+	valuePerMonth := goal.SuggestedMonthly(time.Now())
 
 	var lastContribution *time.Time
 	if count > 0 && lastDate != nil {

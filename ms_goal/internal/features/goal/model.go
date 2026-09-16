@@ -162,3 +162,33 @@ func (m *Goal) Validate(v *validator.Validator) {
 		v.AddError("status", "must be a valid status")
 	}
 }
+
+func (g *Goal) Progress() float64 {
+	if g.TargetAmount <= 0 {
+		return 0
+	}
+
+	p := float64(g.CurrentAmount) / float64(g.TargetAmount) * 100
+	if p > 100 {
+		return 100
+	}
+	return p
+}
+
+func (g *Goal) RemainingAmount() float64 {
+	r := g.TargetAmount - g.CurrentAmount
+	if r < 0 {
+		return 0
+	}
+
+	return float64(r)
+}
+
+func (g *Goal) SuggestedMonthly(now time.Time) float64 {
+	if !g.Deadline.After(now) {
+		return 0
+	}
+
+	months := g.Deadline.Sub(now).Hours() / (24 * 30)
+	return float64(g.RemainingAmount()) / months
+}

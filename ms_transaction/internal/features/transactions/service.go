@@ -172,9 +172,51 @@ func (s *TransactionService) Update(
 		return apiError.NewValidationError(v.Errors)
 	}
 
-	return s.we.Execute(ctx, func(ctx context.Context) error {
+	old, err := s.FindByID(ctx, model.ID)
+	if err != nil {
+		return err
+	}
+
+	if old.CategoryID == model.CategoryID {
+		return s.we.Execute(ctx, func(ctx context.Context) error {
+			return s.repo.Update(ctx, model)
+		})
+	}
+
+	oldCategory, err := s.categoryClient.FindByID(ctx, old.CategoryID)
+	if err != nil {
+		return err
+	}
+	newCategory, err := s.categoryClient.FindByID(ctx, model.CategoryID)
+	if err != nil {
+		return err
+	}
+
+	err = s.we.Execute(ctx, func(ctx context.Context) error {
 		return s.repo.Update(ctx, model)
 	})
+
+	if err != nil {
+		return err
+	}
+
+	userAuth := contexts.GetUser(ctx)
+
+	if oldCategory.GoalID != nil {
+		if err := s.transactionProducer.PublishTransactionGoalDeleted(ctx,
+			events.NewTransactionEvent(model.ID, 0, userAuth.GetID(), *oldCategory.GoalID)); err != nil {
+			return err
+		}
+	}
+
+	if newCategory.GoalID != nil {
+		if err := s.transactionProducer.PublishTransactionGoalCreated(ctx,
+			events.NewTransactionEvent(model.ID, model.Amount, userAuth.GetID(), *newCategory.GoalID)); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *TransactionService) DeleteById(
