@@ -1,24 +1,24 @@
 # 💰 Minhas Finanças
 
-Backend de uma aplicação de **gestão financeira pessoal** construído em **Go** com **microsserviços**. Permite que usuários cadastrem transações financeiras, organizem-nas por categorias e criem metas de economia com acompanhamento de progresso.
+Backend for a **personal finance management** application built in **Go** using **microservices**. It allows users to register financial transactions, organize them by category, and create savings goals with progress tracking.
 
 ---
 
-## 📌 O que o projeto faz
+## 📌 What the project does
 
-- **Autenticação** com JWT e refresh token rotation
-- **Cadastro de usuários** com validação de senha
-- **Categorias** de entrada/saída (ex.: Salário, Mercado, Transporte)
-- **Transações** financeiras com filtros por data, tipo e categoria
-- **Metas financeiras** com cálculo automático de progresso e sugestão de aporte mensal
-- **Relatórios** de saldo por período e gastos por categoria
-- **Comunicação assíncrona** entre serviços via Kafka
+- **Authentication** with JWT and refresh token rotation
+- **User registration** with password validation
+- **Categories** for income/expenses (e.g., Salary, Groceries, Transport)
+- **Financial transactions** with filters by date, type, and category
+- **Financial goals** with automatic progress calculation and monthly contribution suggestions
+- **Reports** on balance by period and spending by category
+- **Asynchronous communication** between services via Kafka
 
 ---
 
-## 🧱 Arquitetura
+## 🧱 Architecture
 
-O projeto é um **monorepo** com 4 microsserviços independentes, cada um com seu próprio banco lógico e comunicação via HTTP + Kafka.
+The project is a **monorepo** with 4 independent microservices, each with its own logical database and communication via HTTP + Kafka.
 
 ```
 ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────────┐
@@ -34,56 +34,56 @@ O projeto é um **monorepo** com 4 microsserviços independentes, cada um com se
               └────────┘ └────────┘ └────────┘
 ```
 
-| Serviço | Porta | Responsabilidade |
-|---------|-------|------------------|
-| **ms_auth** | 4001 | Login, cadastro, JWT, refresh token |
-| **ms_category** | 4002 | CRUD de categorias financeiras |
-| **ms_transaction** | 4003 | CRUD de transações e relatórios |
-| **ms_goal** | 4004 | Metas financeiras e progresso |
+| Service | Port | Responsibility |
+|---------|------|----------------|
+| **ms_auth** | 4001 | Login, registration, JWT, refresh token |
+| **ms_category** | 4002 | CRUD for financial categories |
+| **ms_transaction** | 4003 | CRUD for transactions and reports |
+| **ms_goal** | 4004 | Financial goals and progress |
 
 ---
 
 ## 🛠 Stack
 
-**Linguagem & bibliotecas**
-- Go 1.27 (com `go.work` para o monorepo)
-- chi (router HTTP)
+**Language & libraries**
+- Go 1.27 (with `go.work` for the monorepo)
+- chi (HTTP router)
 - PostgreSQL + golang-migrate
 - Redis (cache)
-- Kafka / sarama (mensageria)
+- Kafka / sarama (messaging)
 - JWT (RS256) + bcrypt
 - OpenTelemetry (tracing)
 
-**Infraestrutura**
+**Infrastructure**
 - Docker Compose
 - PostgreSQL 15, Redis 7, Apache Kafka
-- Jaeger (tracing), Prometheus (métricas), Grafana (dashboards)
+- Jaeger (tracing), Prometheus (metrics), Grafana (dashboards)
 
 ---
 
-## 🚀 Como rodar
+## 🚀 How to run
 
-### Pré-requisitos
+### Prerequisites
 
 - Go 1.27+
-- Docker e Docker Compose
-- Make (opcional)
+- Docker and Docker Compose
+- Make (optional)
 
-### 1. Configurar variáveis de ambiente
+### 1. Configure environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-### 2. Subir a infraestrutura (Postgres, Redis, Kafka, Jaeger...)
+### 2. Start the infrastructure (Postgres, Redis, Kafka, Jaeger...)
 
 ```bash
 docker compose up -d
 ```
 
-### 3. Rodar os serviços
+### 3. Run the services
 
-Em terminais separados, a partir da raiz do projeto:
+In separate terminals, from the project root:
 
 ```bash
 cd ms_auth        && go run ./cmd/api
@@ -92,9 +92,9 @@ cd ms_goal        && go run ./cmd/api
 cd ms_transaction && go run ./cmd/api
 ```
 
-### 4. Testar
+### 4. Test
 
-Faça login para obter um token:
+Log in to obtain a token:
 
 ```bash
 curl -X POST http://localhost:4001/v1/auth \
@@ -102,7 +102,7 @@ curl -X POST http://localhost:4001/v1/auth \
   -d '{"email":"joao@empresa.com","password":"Senha123A"}'
 ```
 
-Use o `access_token` retornado nas demais requisições:
+Use the returned `access_token` in subsequent requests:
 
 ```bash
 curl http://localhost:4004/v1/goals \
@@ -111,13 +111,13 @@ curl http://localhost:4004/v1/goals \
 
 ---
 
-## 📡 Principais endpoints
+## 📡 Main endpoints
 
 ### `ms_auth`
 - `POST /v1/auth` — login
-- `POST /v1/auth/refresh` — renovar tokens
+- `POST /v1/auth/refresh` — refresh tokens
 - `POST /v1/auth/logout` — logout
-- `POST /v1/users` — cadastro
+- `POST /v1/users` — registration
 
 ### `ms_category`
 - `POST /v1/categories`
@@ -130,7 +130,7 @@ curl http://localhost:4004/v1/goals \
 - `POST /v1/transactions`
 - `GET /v1/transactions`
 - `GET /v1/transactions/{id}`
-- `GET /v1/transactions/summary` — saldo e gastos por categoria
+- `GET /v1/transactions/summary` — balance and spending by category
 - `PUT /v1/transactions/{id}`
 - `DELETE /v1/transactions/{id}`
 
@@ -138,53 +138,53 @@ curl http://localhost:4004/v1/goals \
 - `POST /v1/goals`
 - `GET /v1/goals`
 - `GET /v1/goals/{id}`
-- `GET /v1/goals/report/{id}` — relatório da meta
+- `GET /v1/goals/report/{id}` — goal report
 - `PUT /v1/goals/{id}`
 - `DELETE /v1/goals/{id}`
 
-### Infraestrutura (todos os serviços)
+### Infrastructure (all services)
 - `GET /health`
 - `GET /metrics` (Prometheus)
 
 ---
 
-## 📊 Observabilidade
+## 📊 Observability
 
-Depois de subir a stack, acesse:
+After starting the stack, access:
 
-| Ferramenta | URL | Descrição |
-|------------|-----|-----------|
-| **Jaeger** | http://localhost:16686 | Tracing distribuído |
-| **Prometheus** | http://localhost:9090 | Métricas |
+| Tool | URL | Description |
+|------|-----|-------------|
+| **Jaeger** | http://localhost:16686 | Distributed tracing |
+| **Prometheus** | http://localhost:9090 | Metrics |
 | **Grafana** | http://localhost:3000 | Dashboards (admin/admin) |
-| **Kafka UI** | http://localhost:8070 | Inspeção de tópicos |
+| **Kafka UI** | http://localhost:8070 | Topic inspection |
 
 ---
 
-## 📁 Estrutura resumida
+## 📁 Project structure
 
 ```
 minhas_financas/
-├── shared/             # Código compartilhado (auth, cache, db, httpx, obs...)
-├── messaging/          # Producer/Consumer genéricos do Kafka
-├── ms_auth/            # Serviço de autenticação
-├── ms_category/        # Serviço de categorias
-├── ms_goal/            # Serviço de metas
-├── ms_transaction/     # Serviço de transações
-├── compose.yml         # Stack Docker
-└── go.work             # Workspace Go
+├── shared/             # Shared code (auth, cache, db, httpx, obs...)
+├── messaging/          # Generic Kafka Producer/Consumer
+├── ms_auth/            # Authentication service
+├── ms_category/        # Category service
+├── ms_goal/            # Goal service
+├── ms_transaction/     # Transaction service
+├── compose.yml         # Docker stack
+└── go.work             # Go workspace
 ```
 
 ---
 
-## 🔄 Fluxo de eventos (Kafka)
+## 🔄 Event flow (Kafka)
 
-Os serviços se comunicam de forma assíncrona:
+Services communicate asynchronously:
 
-- **`goal_created`** — ms_goal → ms_category cria categoria vinculada
-- **`goal_deleted`** — ms_goal → ms_category remove categoria
-- **`category_deleted`** — ms_category → ms_transaction remove transações
-- **`transaction_goal_created`** — ms_transaction → ms_goal cria vínculo
-- **`transaction_goal_deleted`** — ms_transaction → ms_goal remove vínculo
+- **`goal_created`** — ms_goal → ms_category creates a linked category
+- **`goal_deleted`** — ms_goal → ms_category removes the category
+- **`category_deleted`** — ms_category → ms_transaction removes transactions
+- **`transaction_goal_created`** — ms_transaction → ms_goal creates the link
+- **`transaction_goal_deleted`** — ms_transaction → ms_goal removes the link
 
 ---
