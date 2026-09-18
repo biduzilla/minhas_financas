@@ -1,4 +1,4 @@
-import { HttpErrorResponse, LoginInput, RefreshInput, TokenResponse, ValidationErrorResponse } from '@/type/api';
+import { HttpErrorResponse, LoginInput, RefreshInput, SignUpInput, TokenResponse, User, ValidationErrorResponse } from '@/types/api';
 import 'server-only';
 
 const AUTH_URL = process.env.AUTH_URL!;
@@ -54,4 +54,18 @@ export async function logout(input: RefreshInput): Promise<
 
     if (!res.ok) return { ok: false, error: await parseError(res) };
     return { ok: true };
+}
+
+export async function signup(input: SignUpInput): Promise<
+    { ok: true; data: User } | { ok: false; error: BackendError }
+> {
+    const res = await fetch(`${AUTH_URL}/v1/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+        cache: 'no-store',
+    });
+
+    if (!res.ok) return { ok: false, error: await parseError(res) };
+    return { ok: true, data: await res.json() };
 }

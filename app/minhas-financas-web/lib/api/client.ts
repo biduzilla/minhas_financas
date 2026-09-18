@@ -1,4 +1,4 @@
-import { ApiErrorResponse, ValidationErrorResponse } from '@/type/api';
+import { ApiErrorResponse, ValidationErrorResponse } from '@/types/api';
 import { cookies } from 'next/headers';
 import 'server-only';
 

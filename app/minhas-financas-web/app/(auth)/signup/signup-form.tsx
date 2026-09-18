@@ -10,7 +10,7 @@ import type {
 
 type ApiError = HttpErrorResponse | ValidationErrorResponse;
 
-export function LoginForm({ redirectTo }: { redirectTo?: string }) {
+export function SignUpForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -21,22 +21,26 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
     setError(null);
     setFieldErrors({});
 
-    const formData = new FormData(e.currentTarget);
-    const payload = {
-      email: String(formData.get('email') ?? ''),
-      password: String(formData.get('password') ?? ''),
-    };
+    const fd = new FormData(e.currentTarget);
+    const name = String(fd.get('name') ?? '').trim();
+    const email = String(fd.get('email') ?? '').trim();
+    const password = String(fd.get('password') ?? '');
+    const confirm = String(fd.get('confirm_password') ?? '');
+
+    if (password !== confirm) {
+      setFieldErrors({ confirm_password: 'As senhas não conferem' });
+      return;
+    }
 
     startTransition(async () => {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ name, email, password }),
       });
 
       if (res.ok) {
-        router.push(redirectTo ?? '/dashboard');
-        router.refresh();
+        router.push('/login?signup=ok');
         return;
       }
 
@@ -45,7 +49,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         setFieldErrors(body.errors);
         setError(body.message ?? 'Erro de validação');
       } else {
-        setError(body.message ?? 'Falha no login');
+        setError(body.message ?? 'Falha no cadastro');
       }
     });
   }
@@ -57,6 +61,31 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {/* NOME */}
+      <div>
+        <label htmlFor="name" className={labelCls}>
+          Nome
+        </label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          required
+          minLength={3}
+          maxLength={100}
+          autoComplete="name"
+          disabled={isPending}
+          placeholder="João Silva"
+          className={inputCls}
+        />
+        {fieldErrors.name && (
+          <p className={errorCls}>
+            <span aria-hidden>⚠</span>
+            {fieldErrors.name}
+          </p>
+        )}
+      </div>
+
       {/* EMAIL */}
       <div>
         <label htmlFor="email" className={labelCls}>
@@ -82,27 +111,43 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
 
       {/* SENHA */}
       <div>
-        <div className="mb-1.5 flex items-center justify-between">
-          <label htmlFor="password" className={labelCls}>
-            Senha
-          </label>
-          <a
-            href="#"
-            className="text-xs text-emerald-600 hover:text-emerald-700 hover:underline"
-          >
-            Esqueceu?
-          </a>
-        </div>
+        <label htmlFor="password" className={labelCls}>
+          Senha
+        </label>
         <PasswordInput
           id="password"
           name="password"
-          autoComplete="current-password"
+          autoComplete="new-password"
+          minLength={8}
+          maxLength={72}
           disabled={isPending}
         />
+        <p className="mt-1.5 text-xs text-slate-500">
+          Mínimo 8 caracteres, com pelo menos uma letra e um número.
+        </p>
         {fieldErrors.password && (
           <p className={errorCls}>
             <span aria-hidden>⚠</span>
             {fieldErrors.password}
+          </p>
+        )}
+      </div>
+
+      {/* CONFIRMAR SENHA */}
+      <div>
+        <label htmlFor="confirm_password" className={labelCls}>
+          Confirmar senha
+        </label>
+        <PasswordInput
+          id="confirm_password"
+          name="confirm_password"
+          autoComplete="new-password"
+          disabled={isPending}
+        />
+        {fieldErrors.confirm_password && (
+          <p className={errorCls}>
+            <span aria-hidden>⚠</span>
+            {fieldErrors.confirm_password}
           </p>
         )}
       </div>
@@ -126,7 +171,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         disabled={isPending}
         className="w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-medium text-white shadow-sm transition-all duration-150 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100"
       >
-        {isPending ? 'Entrando…' : 'Entrar'}
+        {isPending ? 'Criando…' : 'Criar conta'}
       </button>
     </form>
   );

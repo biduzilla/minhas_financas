@@ -1,27 +1,27 @@
 export interface Paginated<T> {
-    content: T[];
-    metadata: Partial<PaginationMetadata>
+  content: T[];
+  metadata: Partial<PaginationMetadata>
 }
 
 export interface PaginationMetadata {
-    current_page: number;
-    page_size: number;
-    first_page: number;
-    last_page: number;
-    total_records: number
+  current_page: number;
+  page_size: number;
+  first_page: number;
+  last_page: number;
+  total_records: number
 }
 
 export interface HttpErrorResponse {
-    path: string;
-    status: string;
-    message: string;
+  path: string;
+  status: string;
+  message: string;
 }
 
 export interface ValidationErrorResponse {
-    path: string;
-    status: 'Unprocessable Entity';
-    message: 'validation failed';
-    errors: Record<string, string>;
+  path: string;
+  status: 'Unprocessable Entity';
+  message: 'validation failed';
+  errors: Record<string, string>;
 }
 
 export type ApiErrorResponse = HttpErrorResponse | ValidationErrorResponse
@@ -46,6 +46,7 @@ export interface TokenResponse {
   access_token: string;
   refresh_token: string;
   expires_in: number;
+  refresh_expires_in: number;
 }
 
 export interface RefreshInput {
@@ -60,7 +61,7 @@ export interface SignUpInput {
 }
 
 export interface User {
-  id: string;     
+  id: string;
   email: string;
   name: string;
   version: number;
@@ -97,10 +98,10 @@ export interface Goal {
   id: string;
   user_id: string;
   name: string;
-  target_amount: number;   
+  target_amount: number;
   current_amount: number;
   status: GoalStatus;
-  deadline: string;       
+  deadline: string;
   description?: string | null;
   created_at: string;
 }
@@ -108,7 +109,7 @@ export interface Goal {
 export interface CreateGoalInput {
   name: string;
   target_amount: number;
-  deadline: string;       
+  deadline: string;
   description?: string;
 }
 
@@ -143,8 +144,8 @@ export interface Transaction {
   amount: number;
   category_id: string;
   description: string;
-  version: number;         
-  created_at: string;      
+  version: number;
+  created_at: string;
 }
 
 export interface CreateTransactionInput {
@@ -154,14 +155,14 @@ export interface CreateTransactionInput {
 }
 
 export interface UpdateTransactionInput extends CreateTransactionInput {
-  version: number;        
+  version: number;
 }
 
 export interface TransactionFilters {
   page?: number;
-  page_size?: number;     
+  page_size?: number;
   sort?: 'id' | 'amount' | '-id' | '-amount';
-  start_date?: string;    
+  start_date?: string;
   end_date?: string;
   category_id?: string;
   type?: CategoryType;

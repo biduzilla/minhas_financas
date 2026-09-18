@@ -16,6 +16,6 @@ export function accessCookieOptions(maxAgeSeconds: number) {
     return { ...baseCookieOptions, maxAge: maxAgeSeconds };
 }
 
-export function refreshCookieOptions() {
-    return { ...baseCookieOptions, maxAge: 60 * 60 * 24 * 30 };
+export function refreshCookieOptions(maxAgeSeconds: number) {
+    return { ...baseCookieOptions, maxAge: maxAgeSeconds };
 }

@@ -1,11 +1,11 @@
 import { login } from "@/lib/api/endpoints/auth";
-import { LoginInput } from "@/type/api";
+import { LoginInput } from "@/types/api";
 import { cookies } from "next/headers";
 import {
-  ACCESS_COOKIE,
-  REFRESH_COOKIE,
-  accessCookieOptions,
-  refreshCookieOptions,
+    ACCESS_COOKIE,
+    REFRESH_COOKIE,
+    accessCookieOptions,
+    refreshCookieOptions,
 } from '@/lib/auth/cookies';
 
 export async function POST(req: Request) {
@@ -24,11 +24,11 @@ export async function POST(req: Request) {
         return Response.json(result.error.body, { status: result.error.status });
     }
 
-    const { access_token, refresh_token, expires_in } = result.data
+    const data = result.data
     const jar = await cookies()
 
-    jar.set(ACCESS_COOKIE, access_token, accessCookieOptions(expires_in));
-    jar.set(REFRESH_COOKIE, refresh_token, refreshCookieOptions());
+    jar.set(ACCESS_COOKIE, data.access_token, accessCookieOptions(data.expires_in));
+    jar.set(REFRESH_COOKIE, data.refresh_token, refreshCookieOptions(data.refresh_expires_in));
 
     return Response.json({ ok: true });
 }
