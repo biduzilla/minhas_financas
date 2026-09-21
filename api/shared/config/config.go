@@ -9,8 +9,11 @@ import (
 
 type Config struct {
 	Server struct {
-		Port    int           `env:"SERVER_PORT,required"`
-		Timeout time.Duration `env:"SERVER_TIMEOUT,required"`
+		Port         int           `env:"SERVER_PORT,required"`
+		Timeout      time.Duration `env:"SERVER_TIMEOUT,required"`
+		IdleTimout   time.Duration `env:"SERVER_TIMEOUT_IDLE,required"`
+		ReadTimout   time.Duration `env:"SERVER_TIMEOUT_READ,required"`
+		WriteTimeout time.Duration `env:"SERVER_TIMEOUT_WRITE,required"`
 	}
 	Env string
 	DB  struct {
@@ -39,10 +42,10 @@ type Config struct {
 	Otel struct {
 		Port string `env:"JAEGER_PORT,required"`
 	}
-	Kafka struct {
-		Brokers []string `env:"KAFKA_BROKERS,required"`
-		GroupID string   `env:"KAFKA_GROUP_ID,required"`
-	}
+	// Kafka struct {
+	// 	Brokers []string `env:"KAFKA_BROKERS,required"`
+	// 	GroupID string   `env:"KAFKA_GROUP_ID,required"`
+	// }
 }
 
 func New() *Config {

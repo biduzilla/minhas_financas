@@ -1,4 +1,28 @@
 services:
+  ms-auth:
+    build:
+      context: .
+      dockerfile: ./ms_auth/Dockerfile
+    container_name: ms_auth_minhas_financas
+    env_file: ./ms_auth/.env
+    environment:
+      - DB_DSN=${DB_DSN}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:${JAEGER_PORT}
+      - OTEL_EXPORTER_OTLP_INSECURE=true
+      - OTEL_SERVICE_NAME=ms_auth
+    ports:
+      - "${AUTH_SERVER_PORT}:${AUTH_SERVER_PORT}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./ms_auth/internal/core/config:/root/config
+      - ./ms_auth/resources/keys:/root/resources/keys
+    networks:
+      - api_network
+ 
   postgres:
     image: postgres:15-alpine
     container_name: go_postgres_minhas_financas
@@ -54,7 +78,7 @@ services:
     image: grafana/grafana:latest
     container_name: go_grafana_minhas_financas
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
@@ -170,6 +194,7 @@ volumes:
   redis_minhas_financas_data:
   prometheus_data:
   grafana_data:
+  
 
 networks:
   api_network:

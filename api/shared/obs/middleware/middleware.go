@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"shared/auth/contexts"
+	"shared/auth/cookies"
 	"shared/auth/domain"
 	"shared/auth/domain/apiError"
 	"shared/config"
@@ -134,6 +135,7 @@ func (m *Middleware) EnableCORS(next http.Handler) http.Handler {
 			for i := range m.config.CORS.TrustedOrigins {
 				if origin == m.config.CORS.TrustedOrigins[i] {
 					w.Header().Set("Access-Control-Allow-Origin", origin)
+					w.Header().Set("Access-Control-Allow-Credentials", "true")
 					if r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != "" {
 						w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, PUT, PATCH, DELETE")
 						w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
@@ -174,21 +176,16 @@ func (m *Middleware) RequireActivatedUser(next http.Handler) http.Handler {
 func (m *Middleware) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Vary", "Authorization")
-		authorizationHeader := r.Header.Get("Authorization")
+		w.Header().Add("Vary", "Cookie")
 
-		if authorizationHeader == "" {
+		token := cookies.TokenFromRequest(r)
+
+		if token == "" {
 			r = r.WithContext(contexts.SetUser(r.Context(), domain.AnonymousUser))
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		headerParts := strings.Split(authorizationHeader, " ")
-		if len(headerParts) != 2 || headerParts[0] != "Bearer" {
-			m.errHandler.HandlerError(w, r, apiError.ErrInvalidCredentials)
-			return
-		}
-
-		token := headerParts[1]
 		user, err := m.jwtService.ExtractAuthenticatedUser(token)
 
 		if err != nil {

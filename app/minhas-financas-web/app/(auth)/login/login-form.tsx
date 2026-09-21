@@ -86,12 +86,12 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
           <label htmlFor="password" className={labelCls}>
             Senha
           </label>
-          <a
+          {/* <a
             href="#"
             className="text-xs text-emerald-600 hover:text-emerald-700 hover:underline"
           >
             Esqueceu?
-          </a>
+          </a> */}
         </div>
         <PasswordInput
           id="password"

@@ -14,6 +14,7 @@ type authHandler interface {
 	Authenticate(w http.ResponseWriter, r *http.Request)
 	RefreshToken(w http.ResponseWriter, r *http.Request)
 	Logout(w http.ResponseWriter, r *http.Request)
+	Session(w http.ResponseWriter, r *http.Request)
 }
 
 func NewRouter(handler authHandler) *AuthRouter {
@@ -27,5 +28,6 @@ func (r *AuthRouter) Routes(router chi.Router) {
 		router.Post("/", r.handler.Authenticate)
 		router.Post("/refresh", r.handler.RefreshToken)
 		router.Post("/logout", r.handler.Logout)
+		router.Get("/session", r.handler.Session)
 	})
 }

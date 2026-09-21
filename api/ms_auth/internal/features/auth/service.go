@@ -149,9 +149,10 @@ func (s *AuthService) RefreshToken(
 	}
 
 	return &TokenResponse{
-		AccessToken:  accessToken,
-		RefreshToken: newRefreshToken,
-		ExpiresIn:    int64(s.jwtService.GetAccessTokenExpiration().Seconds()),
+		AccessToken:      accessToken,
+		RefreshToken:     newRefreshToken,
+		ExpiresIn:        int64(s.jwtService.GetAccessTokenExpiration().Seconds()),
+		RefreshExpiresIn: int64(s.jwtService.GetRefreshTokenExpiration().Seconds()),
 	}, nil
 }
 
@@ -203,4 +204,9 @@ func (s *AuthService) saveRefreshToken(
 func hashToken(token string) string {
 	sum := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(sum[:])
+}
+
+func (s *AuthService) ValidateAccessToken(token string) bool {
+	claims, err := s.jwtService.ValidateToken(token, security.TokenTypeAccess)
+	return err == nil && claims != nil
 }

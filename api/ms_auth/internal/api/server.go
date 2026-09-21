@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"shared/config"
 	"shared/obs/otel"
 	"syscall"
 	"time"
@@ -49,6 +50,7 @@ func (app *application) Server() error {
 		fmt.Sprintf(":%d", app.config.Base.Server.Port),
 		instrumentedHandler,
 		app.Logger,
+		app.config.Base,
 	)
 
 	shutdownError := make(chan error, 1)
@@ -70,15 +72,15 @@ func (app *application) Server() error {
 	return nil
 }
 
-func newHTTPServer(addr string, handler http.Handler, logger *slog.Logger) *http.Server {
+func newHTTPServer(addr string, handler http.Handler, logger *slog.Logger, config config.Config) *http.Server {
 	errorLog := slog.NewLogLogger(logger.Handler(), slog.LevelError)
 	return &http.Server{
 		Addr:         addr,
 		Handler:      handler,
-		IdleTimeout:  time.Minute,
+		IdleTimeout:  config.Server.IdleTimout,
 		ErrorLog:     errorLog,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
+		ReadTimeout:  config.Server.ReadTimout,
+		WriteTimeout: config.Server.WriteTimeout,
 	}
 }
 

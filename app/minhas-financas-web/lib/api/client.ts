@@ -52,7 +52,6 @@ export function fieldErrors(e: unknown): Record<string, string> {
     return isValidationError(e) ? e.body.errors : {};
 }
 
-/** Mensagem amigável para o usuário, sem vazar stack/detalhe técnico */
 export function userMessage(e: unknown): string {
     if (isApiError(e)) return e.userMessage;
     if (e instanceof Error) return e.message;
@@ -72,19 +71,37 @@ async function parseErrorBody(res: Response, path: string): Promise<ApiErrorResp
     }
 }
 
+export type ApiService = 'auth' | 'category' | 'transaction' | 'goal';
+
+const SERVICE_URLS: Record<ApiService, string | undefined> = {
+    auth: process.env.AUTH_URL,
+    category: process.env.CATEGORY_URL,
+    transaction: process.env.TRANSACTION_URL,
+    goal: process.env.GOAL_URL,
+};
+
 export interface ApiFetchOptions extends Omit<RequestInit, 'body'> {
+    service: ApiService;
+    path: string;
     body?: string;
-    baseURL?: string;
     skipAuth?: boolean;
+    next?: { tags?: string[]; revalidate?: number | false };
 }
 
 export async function apiFetch<T = unknown>(
-    url: string,
-    opts: ApiFetchOptions = {},
+    opts: ApiFetchOptions,
 ): Promise<T> {
-    const { baseURL, skipAuth, headers, body, ...rest } = opts;
+    const { service, path, skipAuth, headers, body, next, ...rest } = opts;
 
-    const fullUrl = baseURL ? `${baseURL}${url}` : url;
+    const baseURL = SERVICE_URLS[service];
+    if (!baseURL) {
+        throw new Error(
+            `URL do serviço "${service}" não configurada. ` +
+            `Cheque ${service.toUpperCase()}_URL no .env.local`,
+        );
+    }
+
+    const fullUrl = `${baseURL}${path}`;
 
     const finalHeaders = new Headers(headers);
     if (!finalHeaders.has('Content-Type') && body) {
@@ -97,11 +114,14 @@ export async function apiFetch<T = unknown>(
         if (token) finalHeaders.set('Authorization', `Bearer ${token}`);
     }
 
+    const cacheOpt = next ? {} : { cache: rest.cache ?? 'no-store' };
+
     const res = await fetch(fullUrl, {
         ...rest,
+        ...cacheOpt,
         body,
         headers: finalHeaders,
-        cache: rest.cache ?? 'no-store',
+        next,
     });
 
     if (!res.ok) {

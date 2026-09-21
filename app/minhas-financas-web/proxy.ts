@@ -21,7 +21,7 @@ function isExpired(token: string, skew = SKEW_SECONDS): boolean {
     }
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
     const access = req.cookies.get(ACCESS_COOKIE)?.value
     const refresh = req.cookies.get(REFRESH_COOKIE)?.value
 

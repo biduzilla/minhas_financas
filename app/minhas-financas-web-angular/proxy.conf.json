@@ -1,0 +1,6 @@
+{
+  "/api/auth":        { "target": "http://localhost:4001", "changeOrigin": true, "pathRewrite": { "^/api/auth": "/v1/auth" } },
+  "/api/categories":  { "target": "http://localhost:4002", "changeOrigin": true, "pathRewrite": { "^/api/categories": "/v1/categories" } },
+  "/api/transactions":{ "target": "http://localhost:4003", "changeOrigin": true, "pathRewrite": { "^/api/transactions": "/v1/transactions" } },
+  "/api/goals":       { "target": "http://localhost:4004", "changeOrigin": true, "pathRewrite": { "^/api/goals": "/v1/goals" } }
+}
