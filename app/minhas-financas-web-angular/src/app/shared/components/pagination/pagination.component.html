@@ -1,0 +1,41 @@
+@if (lastPage() > 1) {
+  <nav class="flex items-center justify-between border-t border-slate-200 px-2 py-4" aria-label="Paginação">
+    <p class="text-xs text-slate-500">
+      Página <span class="font-medium text-slate-700">{{ currentPage() }}</span>
+      de <span class="font-medium text-slate-700">{{ lastPage() }}</span>
+      — {{ total() }} registros
+    </p>
+
+    <div class="flex items-center gap-1">
+      <button
+        type="button"
+        [disabled]="!hasPrev()"
+        (click)="goTo(currentPage() - 1)"
+        class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        Anterior
+      </button>
+
+      @for (page of pages(); track page) {
+        <button
+          type="button"
+          (click)="goTo(page)"
+          [class]="page === currentPage()
+            ? 'rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm'
+            : 'rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50'"
+        >
+          {{ page }}
+        </button>
+      }
+
+      <button
+        type="button"
+        [disabled]="!hasNext()"
+        (click)="goTo(currentPage() + 1)"
+        class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        Próxima
+      </button>
+    </div>
+  </nav>
+}

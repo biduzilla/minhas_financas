@@ -1,27 +1,27 @@
 services:
-  ms-auth:
-    build:
-      context: .
-      dockerfile: ./ms_auth/Dockerfile
-    container_name: ms_auth_minhas_financas
-    env_file: ./ms_auth/.env
-    environment:
-      - DB_DSN=${DB_DSN}
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:${JAEGER_PORT}
-      - OTEL_EXPORTER_OTLP_INSECURE=true
-      - OTEL_SERVICE_NAME=ms_auth
-    ports:
-      - "${AUTH_SERVER_PORT}:${AUTH_SERVER_PORT}"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - ./ms_auth/internal/core/config:/root/config
-      - ./ms_auth/resources/keys:/root/resources/keys
-    networks:
-      - api_network
+  # ms-auth:
+  #   build:
+  #     context: .
+  #     dockerfile: ./ms_auth/Dockerfile
+  #   container_name: ms_auth_minhas_financas
+  #   env_file: ./ms_auth/.env
+  #   environment:
+  #     - DB_DSN=${DB_DSN}
+  #     - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:${JAEGER_PORT}
+  #     - OTEL_EXPORTER_OTLP_INSECURE=true
+  #     - OTEL_SERVICE_NAME=ms_auth
+  #   ports:
+  #     - "${AUTH_SERVER_PORT}:${AUTH_SERVER_PORT}"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./ms_auth/internal/core/config:/root/config
+  #     - ./ms_auth/resources/keys:/root/resources/keys
+  #   networks:
+  #     - api_network
  
   postgres:
     image: postgres:15-alpine

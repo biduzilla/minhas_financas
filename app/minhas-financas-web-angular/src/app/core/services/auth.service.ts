@@ -2,6 +2,7 @@ import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { Router } from "@angular/router";
 import { catchError, finalize, Observable, of, shareReplay, tap, throwError } from "rxjs";
+import { SignUpInput, User } from "../models/api.types";
 
 interface OkResponse {
   ok: boolean;
@@ -27,6 +28,10 @@ export class AuthService {
     return this.http
       .post<OkResponse>('/api/auth', { email, password })
       .pipe(tap(() => this._isAuthenticated.set(true)));
+  }
+
+  signup(input: SignUpInput) {
+    return this.http.post<User>('/api/users', input)
   }
 
   refreshToken(): Observable<OkResponse> {

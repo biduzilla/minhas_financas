@@ -1,57 +1,37 @@
-import { Component, input, computed, inject } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Component, computed, input, output } from '@angular/core';
 import { PaginationMetadata } from '../../../core/models/api.types';
 
 @Component({
   selector: 'app-pagination',
   standalone: true,
-  template: `
-    @if (totalRecords() > 0) {
-      <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
-        <p class="text-xs text-slate-500">
-          Página {{ currentPage() }} de {{ lastPage() }}
-          · {{ totalRecords() }} {{ totalRecords() === 1 ? 'registro' : 'registros' }}
-        </p>
-
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            [disabled]="currentPage() <= 1"
-            (click)="goTo(currentPage() - 1)"
-            class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Anterior
-          </button>
-
-          <button
-            type="button"
-            [disabled]="currentPage() >= lastPage()"
-            (click)="goTo(currentPage() + 1)"
-            class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Próxima
-          </button>
-        </div>
-      </div>
-    }
-  `,
+  templateUrl: './pagination.component.html',
 })
 export class PaginationComponent {
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
+  meta = input.required<Partial<PaginationMetadata>>();
+  pageChange = output<number>();
 
-  meta = input<Partial<PaginationMetadata>>({});
+  currentPage = computed(() => this.meta().current_page ?? 1);
+  lastPage = computed(() => this.meta().last_page ?? 1);
+  total = computed(() => this.meta().total_records ?? 0);
+  pageSize = computed(() => this.meta().page_size ?? 20);
 
-  protected currentPage = computed(() => this.meta().current_page ?? 1);
-  protected lastPage = computed(() => this.meta().last_page ?? 1);
-  protected totalRecords = computed(() => this.meta().total_records ?? 0);
+  hasPrev = computed(() => this.currentPage() > 1);
+  hasNext = computed(() => this.currentPage() < this.lastPage());
 
-  protected goTo(page: number) {
-    if (page < 1 || page > this.lastPage()) return;
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { page },
-      queryParamsHandling: 'merge',
-    });
+  /** Páginas ao redor da atual para o seletor compacto. */
+  pages = computed<number[]>(() => {
+    const current = this.currentPage();
+    const last = this.lastPage();
+    if (last <= 1) return [];
+
+    const window = 2;
+    const from = Math.max(1, current - window);
+    const to = Math.min(last, current + window);
+    return Array.from({ length: to - from + 1 }, (_, i) => from + i);
+  });
+
+  goTo(page: number) {
+    if (page < 1 || page > this.lastPage() || page === this.currentPage()) return;
+    this.pageChange.emit(page);
   }
 }
