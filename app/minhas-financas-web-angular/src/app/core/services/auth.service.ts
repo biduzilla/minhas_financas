@@ -17,11 +17,16 @@ export class AuthService {
   readonly isAuthenticated = computed(() => this._isAuthenticated());
   private refresh$?: Observable<OkResponse>
 
-  constructor() {
-    this.http
+  init(): Observable<{ authenticated: boolean }> {
+    return this.http
       .get<{ authenticated: boolean }>('/api/auth/session')
-      .pipe(catchError(() => of({ authenticated: false })))
-      .subscribe((r) => this._isAuthenticated.set(r.authenticated))
+      .pipe(
+        tap((r) => this._isAuthenticated.set(r.authenticated)),
+        catchError(() => {
+          this._isAuthenticated.set(false);
+          return of({ authenticated: false });
+        }),
+      );
   }
 
   login(email: string, password: string) {

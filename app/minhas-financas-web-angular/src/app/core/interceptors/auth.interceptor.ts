@@ -5,7 +5,7 @@ import { AuthService } from "../services/auth.service";
 
 function isAuthEndpoint(url: string): boolean {
   return (
-    url.includes('/api/auth') ||        // login
+    url.includes('/api/auth') ||
     url.includes('/api/auth/refresh') ||
     url.includes('/api/auth/logout') ||
     url.includes('/api/auth/session')

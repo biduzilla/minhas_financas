@@ -12,12 +12,12 @@ export interface PaginationMetadata {
 }
 
 /* ============ Erros ============ */
-export interface HttpErrorResponse {
+export interface ApiErrorBody {
   path: string;
   status: string;
   message: string;
+  errors?: Record<string, string>;
 }
-
 export interface ValidationErrorResponse {
   path: string;
   status: 'Unprocessable Entity';
@@ -25,7 +25,7 @@ export interface ValidationErrorResponse {
   errors: Record<string, string>;
 }
 
-export type ApiErrorResponse = HttpErrorResponse | ValidationErrorResponse;
+export type ApiErrorResponse = ApiErrorBody | ValidationErrorResponse;
 
 /* ============ Auth ============ */
 export interface LoginInput {
@@ -67,6 +67,7 @@ export interface Category {
   name?: string | null;
   type: CategoryType | null;
   goal_id?: string | null;
+  version?: number;
 }
 
 export interface CreateCategoryInput {

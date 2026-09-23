@@ -1,6 +1,6 @@
 import { Component, inject, signal, WritableSignal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { form, FormField, required, email } from '@angular/forms/signals';
 
@@ -12,12 +12,21 @@ interface LoginData {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormField],
+  imports: [FormField,RouterLink],
   templateUrl: './login.component.html'
 })
 export class LoginComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  justRegistered = signal(false)
+
+  constructor() {
+    this.route.queryParams.subscribe(params => {
+      this.justRegistered.set(params['registered'] === '1')
+    })
+  }
 
   loginModel = signal<LoginData>({
     email: '',
