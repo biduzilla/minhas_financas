@@ -2,7 +2,9 @@ package transaction
 
 import (
 	"context"
+	"log/slog"
 	"shared/cache"
+	"time"
 )
 
 type WriteExecutor struct {
@@ -32,10 +34,16 @@ func (e *WriteExecutor) Execute(
 		return err
 	}
 
-	go e.invalidateCache(ctx)
-	return nil
-}
+	detached := context.WithoutCancel(ctx)
 
-func (e *WriteExecutor) invalidateCache(ctx context.Context) {
-	_ = e.cache.DeleteByPrefix(ctx, e.keyBuilder.GetPrefix())
+	go func() {
+		invCtx, cancel := context.WithTimeout(detached, 5*time.Second)
+		defer cancel()
+
+		if err := e.cache.DeleteByPrefix(invCtx, e.keyBuilder.GetPrefix()); err != nil {
+			slog.Error("cache invalidate failed", "err", err, "prefix", e.keyBuilder.GetPrefix())
+		}
+	}()
+
+	return nil
 }

@@ -35,6 +35,7 @@ type repository interface {
 	FindAll(
 		ctx context.Context,
 		search string,
+		categoryType *CategoryType,
 		f filters.Filters,
 	) ([]*Category, filters.Metadata, error)
 
@@ -80,6 +81,7 @@ func scanType(s string) (CategoryType, error) {
 func (r *CategoryRepository) FindAll(
 	ctx context.Context,
 	search string,
+	categoryType *CategoryType,
 	f filters.Filters,
 ) ([]*Category, filters.Metadata, error) {
 	userAuth := contexts.GetUser(ctx)
@@ -104,13 +106,20 @@ func (r *CategoryRepository) FindAll(
             OR $1 = ''
         )
 		and user_id = $4
+		AND ($5::smallint IS NULL OR type = $5::smallint)
         ORDER BY %s %s, id ASC
         LIMIT $2 OFFSET $3
     `, f.SortColumn(), f.SortDirection())
 
 	r.logger.Info("query executed", "sql", sqlformat.MinifySQL(query))
 
-	args := []any{search, f.Limit(), f.Offset(), userAuth.GetID()}
+	var typeParam *int
+	if categoryType != nil {
+		v := int(*categoryType)
+		typeParam = &v
+	}
+
+	args := []any{search, f.Limit(), f.Offset(), userAuth.GetID(), typeParam}
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {

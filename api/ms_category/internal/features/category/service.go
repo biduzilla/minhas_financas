@@ -3,6 +3,7 @@ package category
 import (
 	"context"
 	"fmt"
+	"shared/auth/contexts"
 	"shared/auth/domain/apiError"
 	"shared/cache"
 	"shared/utils/filters"
@@ -51,6 +52,7 @@ type service interface {
 	FindAll(
 		ctx context.Context,
 		search string,
+		categoryType *CategoryType,
 		f filters.Filters,
 	) ([]*Category, filters.Metadata, error)
 
@@ -89,16 +91,24 @@ func (s *CategoryService) FindByID(
 func (s *CategoryService) FindAll(
 	ctx context.Context,
 	search string,
+	categoryType *CategoryType,
 	f filters.Filters,
 ) ([]*Category, filters.Metadata, error) {
-	key := s.keyBuilder.BuildListKey(search, f.Page, f.PageSize, f.Sort)
+	userID := contexts.GetUser(ctx).GetID().String()
+
+	typeKey := "all"
+	if categoryType != nil {
+		typeKey = categoryType.String()
+	}
+
+	key := s.keyBuilder.BuildListKey(userID, search, f.Page, f.PageSize, f.Sort, typeKey)
 	type listPayload struct {
 		Models   []*Category
 		Metadata filters.Metadata
 	}
 
 	payload, err := cache.FetchOrCache(ctx, s.cache, key, func() (listPayload, error) {
-		models, meta, err := s.repo.FindAll(ctx, search, f)
+		models, meta, err := s.repo.FindAll(ctx, search, categoryType, f)
 		if err != nil {
 			return listPayload{}, err
 		}

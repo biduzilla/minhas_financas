@@ -127,17 +127,29 @@ func (h *CategoryHandler) FindAll(
 	defer span.End()
 
 	var input struct {
-		search string
+		search    string
+		typeParam string
 		filters.Filters
 	}
 
 	v := validator.New()
 
 	input.search = httputil.ReadStringParam(r, "search", "")
+	input.typeParam = httputil.ReadStringParam(r, "type", "")
 	input.Filters.Page = httputil.ReadIntParam(r, "page", 1, v)
 	input.Filters.PageSize = httputil.ReadIntParam(r, "page_size", 20, v)
 	input.Filters.Sort = httputil.ReadStringParam(r, "sort", "id")
 	input.Filters.SortSafelist = []string{"id", "name", "-id", "-name"}
+
+	var categoryType *CategoryType
+	if input.typeParam != "" {
+		ct, err := ParseCategoryType(input.typeParam)
+		if err != nil {
+			v.Check(false, "type", "must be 'input' or 'output'")
+		} else {
+			categoryType = &ct
+		}
+	}
 
 	if filters.ValidateFilters(v, input.Filters); !v.Valid() {
 		h.errHandler.HandlerError(
@@ -147,10 +159,7 @@ func (h *CategoryHandler) FindAll(
 		return
 	}
 
-	models, metadata, err := h.service.FindAll(ctx,
-		input.search,
-		input.Filters,
-	)
+	models, metadata, err := h.service.FindAll(ctx, input.search, categoryType, input.Filters)
 
 	if err != nil {
 		span.RecordError(err)

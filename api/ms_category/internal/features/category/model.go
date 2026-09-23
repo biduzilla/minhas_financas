@@ -24,11 +24,12 @@ type Category struct {
 }
 
 type CategoryDTO struct {
-	ID     *uuid.UUID `json:"id,omitempty"`
-	UserID *uuid.UUID `json:"user_id,omitempty"`
-	Name   *string    `json:"name,omitempty"`
-	Type   *string    `json:"type"`
-	GoalID *uuid.UUID `json:"goal_id,omitempty"`
+	ID      *uuid.UUID `json:"id,omitempty"`
+	UserID  *uuid.UUID `json:"user_id,omitempty"`
+	Name    *string    `json:"name,omitempty"`
+	Type    *string    `json:"type"`
+	GoalID  *uuid.UUID `json:"goal_id,omitempty"`
+	Version *int       `json:"version,omitempty"`
 }
 
 func (d CategoryDTO) ToModel() *Category {
@@ -47,6 +48,10 @@ func (d CategoryDTO) ToModel() *Category {
 		model.GoalID = d.GoalID
 	}
 
+	if d.Version != nil {
+		model.Version = *d.Version
+	}
+
 	if d.Type != nil {
 		if ct, err := ParseCategoryType(*d.Type); err == nil {
 			model.Type = ct
@@ -58,13 +63,15 @@ func (d CategoryDTO) ToModel() *Category {
 
 func (m *Category) ToDTO() CategoryDTO {
 	t := m.Type.String()
+	v := m.Version
 
 	return CategoryDTO{
-		ID:     &m.ID,
-		UserID: &m.UserID,
-		Name:   &m.Name,
-		Type:   &t,
-		GoalID: m.GoalID,
+		ID:      &m.ID,
+		UserID:  &m.UserID,
+		Name:    &m.Name,
+		Type:    &t,
+		GoalID:  m.GoalID,
+		Version: &v,
 	}
 }
 
@@ -91,7 +98,6 @@ func ParseCategoryType(s string) (CategoryType, error) {
 }
 
 func (m *Category) Validate(v *validator.Validator) {
-	v.Check(m.UserID != uuid.Nil(), "user_id", "must be provided")
 	v.Check(m.Name != "", "name", "must be provided")
 	v.Check(len(m.Name) >= 3, "name", "must be at least 3 characters long")
 	v.Check(len(m.Name) <= 100, "name", "must not be more than 100 characters long")
