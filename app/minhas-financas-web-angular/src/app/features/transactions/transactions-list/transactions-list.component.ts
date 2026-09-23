@@ -22,6 +22,8 @@ export class TransactionsListComponent {
   private router = inject(Router)
   private destroyRef = inject(DestroyRef)
 
+  readonly pendingDeleteId = signal<string | null>(null);
+  readonly deletingId = signal<string | null>(null);
   readonly transactions = signal<Transaction[]>([]);
   readonly metadata = signal<Partial<PaginationMetadata>>({});
   readonly loading = signal(true);
@@ -52,6 +54,31 @@ export class TransactionsListComponent {
         this.filters.set(parsed);
         this.loadTransactions(parsed);
       })
+  }
+
+  askDelete(id: string) {
+    this.pendingDeleteId.set(id);
+  }
+
+  cancelDelete() {
+    this.pendingDeleteId.set(null);
+  }
+
+  confirmDelete(id: string) {
+    this.deletingId.set(id);
+    this.txService
+      .delete(id)
+      .pipe(finalize(() => this.deletingId.set(null)))
+      .subscribe({
+        next: () => {
+          this.pendingDeleteId.set(null);
+          this.loadTransactions(this.filters());
+        },
+        error: (err: HttpErrorResponse) => {
+          this.pendingDeleteId.set(null);
+          this.error.set(err.error?.message ?? 'Erro ao excluir transação');
+        },
+      });
   }
 
   private parseFilters(params: Record<string, string | undefined>): TransactionFilters {

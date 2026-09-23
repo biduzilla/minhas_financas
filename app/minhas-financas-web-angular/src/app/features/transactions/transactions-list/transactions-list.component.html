@@ -8,10 +8,8 @@
         {{ total() }} {{ total() === 1 ? 'registro' : 'registros' }}
       </p>
     </div>
-    <a
-      routerLink="/transactions/new"
-      class="rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white shadow-sm transition-colors hover:bg-emerald-700"
-    >
+    <a routerLink="/transactions/new"
+      class="rounded-lg bg-emerald-600 px-4 py-2 font-medium text-white shadow-sm transition-colors hover:bg-emerald-700">
       + Nova transação
     </a>
   </header>
@@ -21,11 +19,8 @@
     <div class="grid gap-3 md:grid-cols-5">
       <div>
         <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Tipo</label>
-        <select
-          [value]="filters().type ?? ''"
-          (change)="onTypeChange(($any($event.target)).value)"
-          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-        >
+        <select [value]="filters().type ?? ''" (change)="onTypeChange(($any($event.target)).value)"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
           <option value="">Todos</option>
           <option value="input">Entradas</option>
           <option value="output">Saídas</option>
@@ -34,45 +29,32 @@
 
       <div>
         <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Categoria</label>
-        <select
-          [value]="filters().category_id ?? ''"
-          (change)="onCategoryChange(($any($event.target)).value)"
-          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-        >
+        <select [value]="filters().category_id ?? ''" (change)="onCategoryChange(($any($event.target)).value)"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
           <option value="">Todas</option>
           @for (c of categories(); track c.id) {
-            <option [value]="c.id">{{ c.name }}</option>
+          <option [value]="c.id">{{ c.name }}</option>
           }
         </select>
       </div>
 
       <div>
         <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">De</label>
-        <input
-          type="date"
-          [value]="filters().start_date ?? ''"
+        <input type="date" [value]="filters().start_date ?? ''"
           (change)="onStartDateChange(($any($event.target)).value)"
-          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-        />
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
       </div>
 
       <div>
         <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Até</label>
-        <input
-          type="date"
-          [value]="filters().end_date ?? ''"
-          (change)="onEndDateChange(($any($event.target)).value)"
-          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-        />
+        <input type="date" [value]="filters().end_date ?? ''" (change)="onEndDateChange(($any($event.target)).value)"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
       </div>
 
       <div>
         <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Ordenar</label>
-        <select
-          [value]="filters().sort ?? '-id'"
-          (change)="onSortChange(($any($event.target)).value)"
-          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-        >
+        <select [value]="filters().sort ?? '-id'" (change)="onSortChange(($any($event.target)).value)"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
           <option value="-id">Mais recentes</option>
           <option value="id">Mais antigas</option>
           <option value="-amount">Maior valor</option>
@@ -82,80 +64,95 @@
     </div>
 
     @if (hasActiveFilters()) {
-      <div class="mt-3 flex justify-end">
-        <button
-          type="button"
-          (click)="clearFilters()"
-          class="text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:underline"
-        >
-          Limpar filtros
-        </button>
-      </div>
+    <div class="mt-3 flex justify-end">
+      <button type="button" (click)="clearFilters()"
+        class="text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:underline">
+        Limpar filtros
+      </button>
+    </div>
     }
   </section>
 
   <!-- Erro -->
   @if (error()) {
-    <div role="alert" class="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-      <span aria-hidden class="shrink-0">⚠</span>
-      <span>{{ error() }}</span>
-    </div>
+  <div role="alert"
+    class="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+    <span aria-hidden class="shrink-0">⚠</span>
+    <span>{{ error() }}</span>
+  </div>
   }
 
   <!-- Loading -->
   @if (loading()) {
-    <div class="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
-      <p class="text-sm text-slate-500">Carregando…</p>
-    </div>
+  <div class="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
+    <p class="text-sm text-slate-500">Carregando…</p>
+  </div>
   } @else if (isEmpty()) {
-    <div class="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
-      <p class="text-sm text-slate-500">
-        @if (hasActiveFilters()) {
-          Nenhuma transação encontrada com esses filtros.
-        } @else {
-          Nenhuma transação cadastrada ainda.
-        }
-      </p>
-    </div>
+  <div class="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
+    <p class="text-sm text-slate-500">
+      @if (hasActiveFilters()) {
+      Nenhuma transação encontrada com esses filtros.
+      } @else {
+      Nenhuma transação cadastrada ainda.
+      }
+    </p>
+  </div>
   } @else {
-    <!-- Tabela -->
-    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <table class="w-full">
-        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-          <tr>
-            <th class="px-5 py-3">Descrição</th>
-            <th class="px-5 py-3">Categoria</th>
-            <th class="px-5 py-3 text-right">Valor</th>
-            <th class="px-5 py-3">Data</th>
-            <th class="px-5 py-3"></th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-100">
-          @for (t of transactions(); track t.id) {
-            <tr class="transition-colors hover:bg-slate-50">
-              <td class="px-5 py-4 font-medium text-slate-900">{{ t.description }}</td>
-              <td class="px-5 py-4 text-sm text-slate-600">{{ categoryName(t.category_id) }}</td>
-              <td
-                class="px-5 py-4 text-right font-semibold"
-                [class]="isInput(t.category_id) ? 'text-emerald-600' : 'text-rose-600'"
-              >
-                {{ isInput(t.category_id) ? '+' : '−' }} {{ t.amount | currency:'BRL' }}
-              </td>
-              <td class="px-5 py-4 text-sm text-slate-500">{{ t.created_at | date:'dd/MM/yyyy' }}</td>
-              <td class="px-5 py-4 text-right">
-                <a
-                  [routerLink]="['/transactions', t.id]"
-                  class="text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:underline"
-                >
-                  Editar
-                </a>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+  <!-- Tabela -->
+  <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <table class="w-full">
+      <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-5 py-3">Descrição</th>
+          <th class="px-5 py-3">Categoria</th>
+          <th class="px-5 py-3 text-right">Valor</th>
+          <th class="px-5 py-3">Data</th>
+          <th class="px-5 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        @for (t of transactions(); track t.id) {
+        <tr class="transition-colors hover:bg-slate-50">
+          <td class="px-5 py-4 font-medium text-slate-900">{{ t.description }}</td>
+          <td class="px-5 py-4 text-sm text-slate-600">{{ categoryName(t.category_id) }}</td>
+          <td class="px-5 py-4 text-right font-semibold"
+            [class]="isInput(t.category_id) ? 'text-emerald-600' : 'text-rose-600'">
+            {{ isInput(t.category_id) ? '+' : '−' }} {{ t.amount | currency:'BRL' }}
+          </td>
+          <td class="px-5 py-4 text-sm text-slate-500">{{ t.created_at | date:'dd/MM/yyyy' }}</td>
+          <td class="px-5 py-4 text-right">
+            <div class="flex items-center justify-end gap-3">
+              <a [routerLink]="['/transactions', t.id]"
+                class="text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:underline">
+                Editar
+              </a>
 
-    <app-pagination [meta]="metadata()" (pageChange)="onPageChange($event)" />
+              @if (pendingDeleteId() === t.id) {
+              <span class="flex items-center gap-2 text-xs">
+                <span class="text-slate-500">Excluir?</span>
+                <button type="button" (click)="confirmDelete(t.id)" [disabled]="deletingId() === t.id"
+                  class="rounded-md bg-rose-600 px-2 py-1 font-medium text-white transition-colors hover:bg-rose-700 disabled:opacity-60">
+                  {{ deletingId() === t.id ? '…' : 'Sim' }}
+                </button>
+                <button type="button" (click)="cancelDelete()" [disabled]="deletingId() === t.id"
+                  class="rounded-md border border-slate-300 bg-white px-2 py-1 font-medium text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-60">
+                  Não
+                </button>
+              </span>
+              } @else {
+              <button type="button" (click)="askDelete(t.id)"
+                class="text-sm font-medium text-slate-400 transition-colors hover:text-rose-600">
+                Excluir
+              </button>
+              }
+            </div>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <app-pagination [meta]="metadata()" (pageChange)="onPageChange($event)" />
   }
 </div>

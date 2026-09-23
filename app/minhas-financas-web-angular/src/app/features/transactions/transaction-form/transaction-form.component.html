@@ -1,0 +1,130 @@
+<div class="mx-auto max-w-2xl space-y-6 p-6">
+
+  <header>
+    <a routerLink="/transactions" class="text-sm font-medium text-slate-500 transition-colors hover:text-slate-900">
+      ← Transações
+    </a>
+    <h1 class="mt-2 text-2xl font-bold tracking-tight text-slate-900">
+      {{ isEdit() ? 'Editar transação' : 'Nova transação' }}
+    </h1>
+    <p class="mt-1 text-sm text-slate-500">
+      {{ isEdit() ? 'Atualize os dados da transação' : 'Registre uma nova movimentação' }}
+    </p>
+  </header>
+
+  @if (loading()) {
+  <div class="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
+    <p class="text-sm text-slate-500">Carregando…</p>
+  </div>
+  } @else {
+  <form (submit)="$event.preventDefault(); onSubmit()"
+    class="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <!-- Valor -->
+    <div>
+      <label for="amount" class="mb-1.5 block text-sm font-medium text-slate-700">Valor</label>
+      <div class="relative">
+        <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">
+          R$
+        </span>
+        <input id="amount" type="number" step="0.01" inputmode="decimal" [formField]="txForm.amount" placeholder="0,00"
+          class="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-slate-900 placeholder:text-slate-400 transition-all duration-150 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed" />
+      </div>
+      @if (txForm.amount().touched() && txForm.amount().invalid()) {
+      <p class="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+        <span aria-hidden>⚠</span>
+        {{ txForm.amount().errors()[0]?.message }}
+      </p>
+      }
+      @if (backendError('amount')) {
+      <p class="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+        <span aria-hidden>⚠</span> {{ backendError('amount') }}
+      </p>
+      }
+    </div>
+
+    <!-- Categoria -->
+    <div>
+      <label for="category_id" class="mb-1.5 block text-sm font-medium text-slate-700">
+        Categoria
+      </label>
+      <select id="category_id" [formField]="txForm.category_id"
+        class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 transition-all duration-150 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed">
+        <option value="" disabled>Selecione uma categoria</option>
+
+        @if (inputCategories().length > 0) {
+        <optgroup label="Entradas">
+          @for (c of inputCategories(); track c.id) {
+          <option [value]="c.id">{{ c.name }}</option>
+          }
+        </optgroup>
+        }
+
+        @if (outputCategories().length > 0) {
+        <optgroup label="Saídas">
+          @for (c of outputCategories(); track c.id) {
+          <option [value]="c.id">{{ c.name }}</option>
+          }
+        </optgroup>
+        }
+      </select>
+      @if (txForm.category_id().touched() && txForm.category_id().invalid()) {
+      <p class="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+        <span aria-hidden>⚠</span>
+        {{ txForm.category_id().errors()[0]?.message }}
+      </p>
+      }
+      @if (backendError('category_id')) {
+      <p class="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+        <span aria-hidden>⚠</span> {{ backendError('category_id') }}
+      </p>
+      }
+      @if (!loading() && categories().length === 0) {
+      <p class="mt-1.5 text-xs text-slate-500">
+        Nenhuma categoria cadastrada.
+        <a routerLink="/categories/new" class="text-emerald-600 hover:underline">Criar uma →</a>
+      </p>
+      }
+    </div>
+
+    <!-- Descrição -->
+    <div>
+      <label for="description" class="mb-1.5 block text-sm font-medium text-slate-700">
+        Descrição
+      </label>
+      <input id="description" type="text" [formField]="txForm.description" autocomplete="off"
+        placeholder="Ex: Almoço no restaurante"
+        class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 transition-all duration-150 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed" />
+      @if (txForm.description().touched() && txForm.description().invalid()) {
+      <p class="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+        <span aria-hidden>⚠</span>
+        {{ txForm.description().errors()[0]?.message }}
+      </p>
+      }
+      @if (backendError('description')) {
+      <p class="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+        <span aria-hidden>⚠</span> {{ backendError('description') }}
+      </p>
+      }
+    </div>
+
+    @if (error() && !fieldErrors()['amount'] && !fieldErrors()['category_id'] && !fieldErrors()['description']) {
+    <div role="alert"
+      class="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
+      <span aria-hidden class="shrink-0">⚠</span>
+      <span>{{ error() }}</span>
+    </div>
+    }
+
+    <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-5">
+      <a routerLink="/transactions"
+        class="rounded-lg px-4 py-2.5 font-medium text-slate-700 transition-colors hover:bg-slate-100">
+        Cancelar
+      </a>
+      <button type="submit" [disabled]="submitting() || txForm().invalid()"
+        class="rounded-lg bg-emerald-600 px-4 py-2.5 font-medium text-white shadow-sm transition-all duration-150 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100">
+        {{ submitting() ? 'Salvando…' : (isEdit() ? 'Salvar alterações' : 'Criar transação') }}
+      </button>
+    </div>
+  </form>
+  }
+</div>

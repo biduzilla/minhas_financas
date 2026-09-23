@@ -9,6 +9,8 @@ import (
 	"shared/cache"
 	"shared/utils/filters"
 	"shared/validator"
+	"strconv"
+	"time"
 	"uuid"
 )
 
@@ -96,11 +98,28 @@ func (s *TransactionService) FindAll(
 	ctx context.Context,
 	query transactionQuery,
 ) ([]*Transaction, filters.Metadata, error) {
+	userID := contexts.GetUser(ctx).GetID().String()
+
+	var startKey, endKey, typeKey, categoryKey string
+	if query.StartDate != nil {
+		startKey = query.StartDate.Format(time.RFC3339)
+	}
+	if query.EndDate != nil {
+		endKey = query.EndDate.Format(time.RFC3339)
+	}
+	if query.Type != nil {
+		typeKey = strconv.Itoa(int(*query.Type))
+	}
+	if query.CategoryID != uuid.Nil() {
+		categoryKey = query.CategoryID.String()
+	}
+
 	key := s.keyBuilder.BuildListKey(
-		query.StartDate,
-		query.EndDate,
-		query.Type,
-		query.CategoryID,
+		userID,
+		startKey,
+		endKey,
+		typeKey,
+		categoryKey,
 		query.Filters.Page,
 		query.Filters.PageSize,
 		query.Filters.Sort,

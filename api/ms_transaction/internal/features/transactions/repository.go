@@ -128,7 +128,7 @@ func (r *TransactionRepository) FindAll(
 		"userID":     userAuth.GetID(),
 		"startDate":  query.StartDate,
 		"endDate":    query.EndDate,
-		"categoryID": query.CategoryID,
+		"categoryID": nullUUID(query.CategoryID),
 		"type":       query.Type,
 		"limit":      query.Filters.Limit(),
 		"offset":     query.Filters.Offset(),

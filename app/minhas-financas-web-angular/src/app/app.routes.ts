@@ -33,6 +33,20 @@ export const routes: Routes = [
           ).then((m) => m.TransactionsListComponent),
       },
       {
+        path: 'transactions/new',                 // 👈 antes do :id
+        loadComponent: () =>
+          import(
+            './features/transactions/transaction-form/transaction-form.component'
+          ).then((m) => m.TransactionFormComponent),
+      },
+      {
+        path: 'transactions/:id',
+        loadComponent: () =>
+          import(
+            './features/transactions/transaction-form/transaction-form.component'
+          ).then((m) => m.TransactionFormComponent),
+      },
+      {
         path: 'categories',
         loadComponent: () =>
           import(
