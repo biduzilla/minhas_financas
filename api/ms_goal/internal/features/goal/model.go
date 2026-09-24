@@ -52,8 +52,8 @@ type Goal struct {
 	ID            uuid.UUID
 	UserID        uuid.UUID
 	Name          string
-	TargetAmount  int64
-	CurrentAmount int64
+	TargetAmount  float64
+	CurrentAmount float64
 	Status        GoalStatus
 	Deadline      time.Time
 	Description   *string
@@ -61,7 +61,7 @@ type Goal struct {
 
 type CreateGoalDTO struct {
 	Name         string    `json:"name"`
-	TargetAmount int64     `json:"target_amount"`
+	TargetAmount float64   `json:"target_amount"`
 	Deadline     time.Time `json:"deadline"`
 	Description  *string   `json:"description,omitempty"`
 }
@@ -70,12 +70,13 @@ type GoalDTO struct {
 	ID            *uuid.UUID `json:"id"`
 	UserID        *uuid.UUID `json:"user_id"`
 	Name          *string    `json:"name"`
-	TargetAmount  *int64     `json:"target_amount"`
-	CurrentAmount *int64     `json:"current_amount"`
+	TargetAmount  *float64   `json:"target_amount"`
+	CurrentAmount *float64   `json:"current_amount"`
 	Status        *string    `json:"status"`
 	Deadline      *time.Time `json:"deadline"`
 	Description   *string    `json:"description,omitempty"`
 	CreatedAt     *time.Time `json:"created_at"`
+	Version       *int       `json:"version"`
 }
 
 type GoalReportDTO struct {
@@ -123,6 +124,10 @@ func (d GoalDTO) ToModel() *Goal {
 		model.Deadline = *d.Deadline
 	}
 
+	if d.Version != nil {
+		model.Version = *d.Version
+	}
+
 	if d.Status != nil {
 		if st, err := ParseGoalStatus(*d.Status); err == nil {
 			model.Status = st
@@ -144,6 +149,7 @@ func (m *Goal) ToDTO() GoalDTO {
 		Deadline:      &m.Deadline,
 		Description:   m.Description,
 		CreatedAt:     &m.CreatedAt,
+		Version:       &m.Version,
 	}
 }
 
@@ -189,6 +195,16 @@ func (g *Goal) SuggestedMonthly(now time.Time) float64 {
 		return 0
 	}
 
-	months := g.Deadline.Sub(now).Hours() / (24 * 30)
-	return float64(g.RemainingAmount()) / months
+	months := 0
+	cursor := now
+	for cursor.Before(g.Deadline) {
+		cursor = cursor.AddDate(0, 1, 0)
+		months++
+	}
+
+	if months < 1 {
+		months = 1
+	}
+
+	return g.RemainingAmount() / float64(months)
 }

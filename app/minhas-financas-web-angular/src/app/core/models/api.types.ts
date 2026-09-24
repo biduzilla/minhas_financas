@@ -95,6 +95,7 @@ export interface Goal {
   deadline: string;
   description?: string | null;
   created_at: string;
+  version: number
 }
 
 export interface CreateGoalInput {

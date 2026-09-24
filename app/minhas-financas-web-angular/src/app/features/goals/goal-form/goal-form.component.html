@@ -1,0 +1,150 @@
+<!-- src/app/features/goals/goal-form/goal-form.component.html -->
+<div class="mx-auto max-w-2xl space-y-6 p-6">
+
+  <header>
+    <a routerLink="/goals" class="text-sm font-medium text-slate-500 transition-colors hover:text-slate-900">
+      ← Metas
+    </a>
+    <h1 class="mt-2 text-2xl font-bold tracking-tight text-slate-900">
+      {{ isEdit() ? 'Editar meta' : 'Nova meta' }}
+    </h1>
+    <p class="mt-1 text-sm text-slate-500">
+      {{ isEdit() ? 'Atualize os dados da meta' : 'Defina um objetivo e acompanhe o progresso' }}
+    </p>
+  </header>
+
+  @if (loading()) {
+    <div class="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
+      <p class="text-sm text-slate-500">Carregando…</p>
+    </div>
+  } @else {
+    <form
+      (submit)="$event.preventDefault(); onSubmit()"
+      class="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+    >
+      <!-- Nome -->
+      <div>
+        <label for="name" class="mb-1.5 block text-sm font-medium text-slate-700">Nome</label>
+        <input
+          id="name"
+          type="text"
+          [formField]="goalForm.name"
+          autocomplete="off"
+          placeholder="Ex: Viagem para Europa"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 transition-all duration-150 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
+        />
+        @if (goalForm.name().touched() && goalForm.name().invalid()) {
+          <p class="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+            <span aria-hidden>⚠</span>
+            {{ goalForm.name().errors()[0]?.message }}
+          </p>
+        }
+        @if (backendError('name')) {
+          <p class="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+            <span aria-hidden>⚠</span> {{ backendError('name') }}
+          </p>
+        }
+      </div>
+
+      <!-- Valor-alvo -->
+      <div>
+        <label for="target_amount" class="mb-1.5 block text-sm font-medium text-slate-700">Valor-alvo</label>
+        <div class="relative">
+          <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">
+            R$
+          </span>
+          <input
+            id="target_amount"
+            type="number"
+            step="0.01"
+            inputmode="decimal"
+            [formField]="goalForm.target_amount"
+            placeholder="0,00"
+            class="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-slate-900 placeholder:text-slate-400 transition-all duration-150 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
+          />
+        </div>
+        @if (goalForm.target_amount().touched() && goalForm.target_amount().invalid()) {
+          <p class="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+            <span aria-hidden>⚠</span>
+            {{ goalForm.target_amount().errors()[0]?.message }}
+          </p>
+        }
+        @if (backendError('target_amount')) {
+          <p class="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+            <span aria-hidden>⚠</span> {{ backendError('target_amount') }}
+          </p>
+        }
+      </div>
+
+      <!-- Deadline -->
+      <div>
+        <label for="deadline" class="mb-1.5 block text-sm font-medium text-slate-700">Prazo</label>
+        <input
+          id="deadline"
+          type="date"
+          [formField]="goalForm.deadline"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 transition-all duration-150 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
+        />
+        @if (goalForm.deadline().touched() && goalForm.deadline().invalid()) {
+          <p class="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+            <span aria-hidden>⚠</span>
+            {{ goalForm.deadline().errors()[0]?.message }}
+          </p>
+        }
+        @if (backendError('deadline')) {
+          <p class="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+            <span aria-hidden>⚠</span> {{ backendError('deadline') }}
+          </p>
+        }
+      </div>
+
+      <!-- Descrição -->
+      <div>
+        <label for="description" class="mb-1.5 block text-sm font-medium text-slate-700">
+          Descrição <span class="text-slate-400">(opcional)</span>
+        </label>
+        <textarea
+          id="description"
+          rows="3"
+          [formField]="goalForm.description"
+          placeholder="Detalhes sobre a meta…"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 placeholder:text-slate-400 transition-all duration-150 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
+        ></textarea>
+        @if (goalForm.description().touched() && goalForm.description().invalid()) {
+          <p class="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+            <span aria-hidden>⚠</span>
+            {{ goalForm.description().errors()[0]?.message }}
+          </p>
+        }
+        @if (backendError('description')) {
+          <p class="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+            <span aria-hidden>⚠</span> {{ backendError('description') }}
+          </p>
+        }
+      </div>
+
+      @if (error() && !fieldErrors()['name'] && !fieldErrors()['target_amount'] && !fieldErrors()['deadline']) {
+        <div role="alert" class="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
+          <span aria-hidden class="shrink-0">⚠</span>
+          <span>{{ error() }}</span>
+        </div>
+      }
+
+      <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-5">
+        <a
+          routerLink="/goals"
+          class="rounded-lg px-4 py-2.5 font-medium text-slate-700 transition-colors hover:bg-slate-100"
+        >
+          Cancelar
+        </a>
+        <button
+          type="submit"
+          [disabled]="submitting() || goalForm().invalid()"
+          class="rounded-lg bg-emerald-600 px-4 py-2.5 font-medium text-white shadow-sm transition-all duration-150 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100"
+        >
+          {{ submitting() ? 'Salvando…' : (isEdit() ? 'Salvar alterações' : 'Criar meta') }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

@@ -67,6 +67,26 @@ export const routes: Routes = [
             './features/categories/category-form/category-form.component'
           ).then((m) => m.CategoryFormComponent),
       },
+      {
+        path: 'goals',
+        loadComponent: () =>
+          import('./features/goals/goals-list/goals-list.component').then((m) => m.GoalsListComponent),
+      },
+      {
+        path: 'goals/new',
+        loadComponent: () =>
+          import('./features/goals/goal-form/goal-form.component').then((m) => m.GoalFormComponent),
+      },
+      {
+        path: 'goals/:id/edit',
+        loadComponent: () =>
+          import('./features/goals/goal-form/goal-form.component').then((m) => m.GoalFormComponent),
+      },
+      {
+        path: 'goals/:id',
+        loadComponent: () =>
+          import('./features/goals/goal-detail/goal-detail.component').then((m) => m.GoalDetailComponent),
+      },
     ],
   },
 

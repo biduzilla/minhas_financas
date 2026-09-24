@@ -28,6 +28,7 @@ type GoalTransactionDTO struct {
 	TransactionID *uuid.UUID `json:"transaction_id,omitempty"`
 	Amount        *float64   `json:"amount,omitempty"`
 	CreatedAt     *time.Time `json:"created_at,omitempty"`
+	Version       *int       `json:"version"`
 }
 
 func (d CreateGoalTransactionDTO) ToModel() *GoalTransaction {
@@ -56,6 +57,9 @@ func (d GoalTransactionDTO) ToModel() *GoalTransaction {
 	if d.CreatedAt != nil {
 		model.CreatedAt = *d.CreatedAt
 	}
+	if d.Version != nil {
+		model.Version = *d.Version
+	}
 	return &model
 }
 
@@ -66,6 +70,7 @@ func (m *GoalTransaction) ToDTO() GoalTransactionDTO {
 		TransactionID: &m.TransactionID,
 		Amount:        &m.Amount,
 		CreatedAt:     &m.CreatedAt,
+		Version:       &m.Version,
 	}
 }
 
