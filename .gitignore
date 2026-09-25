@@ -1,0 +1,8 @@
+# Guias internos de desenvolvimento (não versionar)
+api-guide.md
+api-guide_V2.md
+api-guide_V3.md
+api-guide_V4.md
+
+# Alternativa: bloquear qualquer api-guide*.md futuro
+# api-guide*.md
