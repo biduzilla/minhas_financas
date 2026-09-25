@@ -1,10 +1,10 @@
 # Minhas Finanças
 
-Aplicação fullstack de **gestão financeira pessoal**. Backend em **Go** com arquitetura de microsserviços, frontend em **Angular 22** signal-first. O usuário registra transações (entradas/saídas), organiza em categorias, cria metas com progresso automático e consulta relatórios de balanço.
+Fullstack **personal finance management** application. Backend in **Go** with microservices architecture, frontend in **Angular 22** signal-first. Users record transactions (income/expenses), organize them into categories, create goals with automatic progress tracking, and view balance reports.
 
 ---
 
-## Visão geral
+## Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -14,11 +14,11 @@ Aplicação fullstack de **gestão financeira pessoal**. Backend em **Go** com a
 │  │  Signals · Standalone · Zoneless · Tailwind           │  │
 │  └────────────┬──────────────────────────────────────────┘  │
 └───────────────┼─────────────────────────────────────────────┘
-                │ cookies httpOnly
-                │ proxy de dev
+                │ httpOnly cookies
+                │ dev proxy
                 ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                  Backend Go (microsserviços)                 │
+│                  Go Backend (microservices)                  │
 │                                                              │
 │  ┌──────────┐  ┌────────────┐  ┌──────────────┐  ┌────────┐ │
 │  │ ms_auth  │  │ms_category │  │ms_transaction│  │ms_goal │ │
@@ -33,7 +33,7 @@ Aplicação fullstack de **gestão financeira pessoal**. Backend em **Go** com a
 │    │Postgres │          │  Redis   │          │  Kafka  │  │
 │    └─────────┘          └──────────┘          └─────────┘  │
 │                                                              │
-│    Observabilidade: Jaeger · Prometheus · Grafana           │
+│    Observability: Jaeger · Prometheus · Grafana             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -42,78 +42,78 @@ Aplicação fullstack de **gestão financeira pessoal**. Backend em **Go** com a
 ## Stack
 
 ### Backend
-| Camada | Tecnologia |
+| Layer | Technology |
 |---|---|
-| Linguagem | Go |
+| Language | Go |
 | HTTP | Chi router |
-| Banco | PostgreSQL |
+| Database | PostgreSQL |
 | Cache | Redis |
-| Mensageria | Apache Kafka (KRaft mode) |
-| Auth | JWT com refresh token rotation |
-| Observabilidade | OpenTelemetry + Jaeger + Prometheus + Grafana |
-| Containerização | Docker + Docker Compose |
+| Messaging | Apache Kafka (KRaft mode) |
+| Auth | JWT with refresh token rotation |
+| Observability | OpenTelemetry + Jaeger + Prometheus + Grafana |
+| Containerization | Docker + Docker Compose |
 
 ### Frontend
-| Camada | Tecnologia |
+| Layer | Technology |
 |---|---|
 | Framework | Angular 22 (standalone + signals + zoneless) |
-| Estilos | Tailwind CSS 4 |
-| Formulários | Signal Forms |
-| HTTP | HttpClient com interceptors funcionais |
-| Testes | Vitest |
+| Styling | Tailwind CSS 4 |
+| Forms | Signal Forms |
+| HTTP | HttpClient with functional interceptors |
+| Testing | Vitest |
 | Node | 22 LTS |
 
 ---
 
-## Funcionalidades
+## Features
 
-- **Autenticação** — login, signup, logout, sessão com cookies httpOnly
-- **Dashboard** — resumo financeiro (saldo, entradas, saídas, breakdown por categoria)
-- **Categorias** — CRUD completo com tipo `input`/`output`
-- **Transações** — CRUD com filtros (tipo, categoria, período), ordenação e paginação
-- **Metas** — CRUD + relatório com barra de progresso e sugestão mensal
-- **Categoria espelho** — criada automaticamente via evento Kafka ao criar uma meta
+- **Authentication** — login, signup, logout, session with httpOnly cookies
+- **Dashboard** — financial summary (balance, income, expenses, breakdown by category)
+- **Categories** — full CRUD with `input`/`output` type
+- **Transactions** — CRUD with filters (type, category, period), sorting, and pagination
+- **Goals** — CRUD + progress report with progress bar and monthly suggestion
+- **Mirror category** — automatically created via Kafka event when a goal is created
 
 ---
 
-## Como rodar
+## How to run
 
-### Pré-requisitos
+### Prerequisites
 
 - **Go 1.22+**
 - **Node 22 LTS** — `nvm install 22 && nvm use 22`
 - **Docker + Docker Compose**
 - **Angular CLI** — `npm install -g @angular/cli@latest`
 
-### 1. Infraestrutura (Postgres, Redis, Kafka, Jaeger, Prometheus, Grafana)
+### 1. Infrastructure (Postgres, Redis, Kafka, Jaeger, Prometheus, Grafana)
 
-No diretório raiz:
+In the repository root:
 
 ```bash
 docker compose up -d
 ```
 
-Sobe 7 containers:
+Starts 7 containers:
 
-| Container | Porta | Propósito |
+| Container | Port | Purpose |
 |---|---|---|
-| Postgres | 5432 | Banco de dados |
+| Postgres | 5432 | Database |
 | Redis | 6379 | Cache |
-| Kafka | 9092, 9094 | Mensageria (interna + externa) |
-| Kafka UI | 8070 | Interface web pro Kafka |
-| Jaeger | 16686 | Tracing distribuído |
-| Prometheus | 9090 | Métricas |
+| Kafka | 9092, 9094 | Messaging (internal + external) |
+| Kafka UI | 8070 | Kafka web interface |
+| Jaeger | 16686 | Distributed tracing |
+| Prometheus | 9090 | Metrics |
 | Grafana | 3001 | Dashboards |
 
-Confere que subiu:
+Verify they're up:
 
 ```bash
 docker compose ps
 ```
 
-### 2. Backend Go
+### 2. Go Backend
 
-Cada microserviço tem seu próprio `main.go` e `.env`. Sobe os quatro:
+Each microservice has its own `main.go` and `.env`. Start all four:
 
 ```bash
 # Terminal 1
@@ -129,13 +129,13 @@ cd ms_transaction && go run ./cmd/api
 cd ms_goal && go run ./cmd/api
 ```
 
-Ou, se você tiver um Makefile:
+Or, if you have a Makefile:
 
 ```bash
 make run-all
 ```
 
-Confere:
+Verify:
 
 ```bash
 curl http://localhost:4001/health
@@ -144,7 +144,7 @@ curl http://localhost:4003/health
 curl http://localhost:4004/health
 ```
 
-### 3. Frontend Angular
+### 3. Angular Frontend
 
 ```bash
 cd web
@@ -152,15 +152,15 @@ npm install
 ng serve
 ```
 
-Abre em `http://localhost:4200`.
+Opens at `http://localhost:4200`.
 
 ---
 
-## Arquitetura
+## Architecture
 
-### Autenticação com cookies httpOnly
+### Authentication with httpOnly cookies
 
-Os tokens **nunca** passam pelo JavaScript. O `ms_auth` seta cookies httpOnly no login; o browser anexa automaticamente em toda requisição subsequente.
+Tokens **never** pass through JavaScript. `ms_auth` sets httpOnly cookies on login; the browser attaches them automatically to every subsequent request.
 
 ```
 [Login]
@@ -168,26 +168,26 @@ Browser → POST localhost:4200/api/auth  (proxy)
               ↓
         → POST localhost:4001/v1/auth
         ← 200 { ok: true } + Set-Cookie: access_token=...; HttpOnly
-Browser guarda o cookie no domínio "localhost"
+Browser stores the cookie under the "localhost" domain
 
-[Próxima request]
+[Next request]
 Browser → GET localhost:4200/api/transactions
-         + Cookie: access_token=...   ← automático
+         + Cookie: access_token=...   ← automatic
               ↓ (proxy)
         → GET localhost:4003/v1/transactions
-         + Cookie: access_token=...   ← proxy repassou
+         + Cookie: access_token=...   ← proxy forwarded it
         ← 200 [...]
 ```
 
-**Por que funciona:** cookie não é escopado por porta, só por domínio. Um `Set-Cookie` do `:4001` é enviado automaticamente pro `:4002`, `:4003`, `:4004`. Os quatro microserviços leem o mesmo cookie sem configuração extra.
+**Why it works:** cookies are not scoped by port, only by domain. A `Set-Cookie` from `:4001` is automatically sent to `:4002`, `:4003`, `:4004`. All four microservices read the same cookie with no extra configuration.
 
-**Mitigação de XSS:** como o token é httpOnly, um script injetado (`document.cookie`) não o vê. O browser continua enviando normalmente.
+**XSS mitigation:** since the token is httpOnly, an injected script (`document.cookie`) can't see it. The browser still sends it normally.
 
-**Refresh token rotation:** cada refresh gera um novo par e revoga o anterior. Se um refresh já revogado for reutilizado (indício de roubo), **toda a família é revogada** — o usuário precisa logar de novo.
+**Refresh token rotation:** each refresh generates a new pair and revokes the previous one. If a revoked refresh is reused (a sign of theft), the **entire family is revoked** — the user must log in again.
 
-### Proxy de desenvolvimento
+### Development proxy
 
-O Angular fala apenas com `/api/*` em `localhost:4200`. O `proxy.conf.json` reescreve pra cada microserviço:
+Angular only talks to `/api/*` on `localhost:4200`. `proxy.conf.json` rewrites to each microservice:
 
 ```json
 {
@@ -199,30 +199,30 @@ O Angular fala apenas com `/api/*` em `localhost:4200`. O `proxy.conf.json` rees
 }
 ```
 
-Pro browser, tudo é `localhost:4200` — **same-origin**. Sem CORS, sem preflight, sem `SameSite` bloqueando.
+From the browser's perspective, everything is `localhost:4200` — **same-origin**. No CORS, no preflight, no `SameSite` blocking.
 
-### Comunicação entre serviços
+### Inter-service communication
 
-- **Síncrona (REST)** — chamadas diretas entre serviços via HTTP (ex: `ms_transaction` chama `ms_category` pra validar categoria)
-- **Assíncrona (Kafka)** — eventos de domínio:
-  - `goal_created` → `ms_category` cria categoria espelho
-  - `goal_deleted` → `ms_category` remove categoria espelho
-  - `category_deleted` → `ms_transaction` apaga transações vinculadas
-  - `transaction_goal_created` / `_deleted` → `ms_goal` atualiza `current_amount`
+- **Synchronous (REST)** — direct HTTP calls between services (e.g., `ms_transaction` calls `ms_category` to validate a category)
+- **Asynchronous (Kafka)** — domain events:
+  - `goal_created` → `ms_category` creates mirror category
+  - `goal_deleted` → `ms_category` removes mirror category
+  - `category_deleted` → `ms_transaction` deletes linked transactions
+  - `transaction_goal_created` / `_deleted` → `ms_goal` updates `current_amount`
 
-### Observabilidade
+### Observability
 
-Cada serviço emite traces OpenTelemetry + métricas Prometheus + logs estruturados (`slog`).
+Each service emits OpenTelemetry traces + Prometheus metrics + structured logs (`slog`).
 
-- **Jaeger** — `http://localhost:16686` — traces distribuídos
-- **Prometheus** — `http://localhost:9090` — métricas brutas
+- **Jaeger** — `http://localhost:16686` — distributed traces
+- **Prometheus** — `http://localhost:9090` — raw metrics
 - **Grafana** — `http://localhost:3001` (admin/admin) — dashboards
 
-Trace de uma requisição atravessa os 4 serviços por `X-Request-Id` propagado.
+A request trace spans all 4 services via the propagated `X-Request-Id`.
 
 ---
 
-## Domínio
+## Domain
 
 ```mermaid
 erDiagram
@@ -231,107 +231,107 @@ erDiagram
     USER ||--o{ GOAL : owns
     USER ||--o{ REFRESH_TOKEN : has
     CATEGORY ||--o{ TRANSACTION : classifies
-    GOAL ||--o| CATEGORY : "cria categoria espelho"
+    GOAL ||--o| CATEGORY : "creates mirror category"
     GOAL ||--o{ GOAL_TRANSACTION : has
     TRANSACTION ||--o{ GOAL_TRANSACTION : contributes
 ```
 
-- **USER** — identidade e autenticação
-- **CATEGORY** — classifica transações como `input` ou `output`. Pode estar vinculada a uma meta
-- **TRANSACTION** — movimentação financeira com categoria obrigatória
-- **GOAL** — meta com valor-alvo, deadline e status (`IN_PROGRESS` / `COMPLETED` / `EXPIRED` / `CANCELED`)
-- **GOAL_TRANSACTION** — vínculo N:N entre metas e transações (criado via Kafka)
-- **REFRESH_TOKEN** — controle de sessão com família (rotação)
+- **USER** — identity and authentication
+- **CATEGORY** — classifies transactions as `input` or `output`. Can be linked to a goal
+- **TRANSACTION** — financial movement with a required category
+- **GOAL** — goal with target amount, deadline, and status (`IN_PROGRESS` / `COMPLETED` / `EXPIRED` / `CANCELED`)
+- **GOAL_TRANSACTION** — N:N link between goals and transactions (created via Kafka)
+- **REFRESH_TOKEN** — session control with family (rotation)
 
 ---
 
-## Endpoints principais
+## Main endpoints
 
 ### `ms_auth` — :4001
 
-| Método | Path | Descrição |
+| Method | Path | Description |
 |---|---|---|
-| POST | `/v1/auth` | Login (seta cookies httpOnly) |
-| POST | `/v1/auth/refresh` | Renova tokens (lê cookie de refresh) |
-| POST | `/v1/auth/logout` | Revoga família + limpa cookies |
-| GET | `/v1/auth/session` | `{ authenticated: bool }` — sempre 200 |
+| POST | `/v1/auth` | Login (sets httpOnly cookies) |
+| POST | `/v1/auth/refresh` | Renews tokens (reads refresh cookie) |
+| POST | `/v1/auth/logout` | Revokes family + clears cookies |
+| GET | `/v1/auth/session` | `{ authenticated: bool }` — always 200 |
 | POST | `/v1/users` | Signup |
 
 ### `ms_category` — :4002
 
-| Método | Path | Descrição |
+| Method | Path | Description |
 |---|---|---|
-| POST | `/v1/categories` | Criar |
-| GET | `/v1/categories` | Listar (`page`, `page_size`, `sort`, `type`) |
-| GET | `/v1/categories/{id}` | Detalhe |
-| PUT | `/v1/categories/{id}` | Atualizar (inclui `version`) |
-| DELETE | `/v1/categories/{id}` | Remover (bloqueado se `goal_id`) |
+| POST | `/v1/categories` | Create |
+| GET | `/v1/categories` | List (`page`, `page_size`, `sort`, `type`) |
+| GET | `/v1/categories/{id}` | Detail |
+| PUT | `/v1/categories/{id}` | Update (includes `version`) |
+| DELETE | `/v1/categories/{id}` | Delete (blocked if `goal_id`) |
 
 ### `ms_transaction` — :4003
 
-| Método | Path | Descrição |
+| Method | Path | Description |
 |---|---|---|
-| POST | `/v1/transactions` | Criar |
-| GET | `/v1/transactions` | Listar (`type`, `category_id`, `start_date`, `end_date`) |
-| GET | `/v1/transactions/{id}` | Detalhe |
-| GET | `/v1/transactions/summary` | Resumo financeiro |
-| PUT | `/v1/transactions/{id}` | Atualizar (inclui `version`) |
-| DELETE | `/v1/transactions/{id}` | Deletar |
+| POST | `/v1/transactions` | Create |
+| GET | `/v1/transactions` | List (`type`, `category_id`, `start_date`, `end_date`) |
+| GET | `/v1/transactions/{id}` | Detail |
+| GET | `/v1/transactions/summary` | Financial summary |
+| PUT | `/v1/transactions/{id}` | Update (includes `version`) |
+| DELETE | `/v1/transactions/{id}` | Delete |
 
 ### `ms_goal` — :4004
 
-| Método | Path | Descrição |
+| Method | Path | Description |
 |---|---|---|
-| POST | `/v1/goals` | Criar |
-| GET | `/v1/goals` | Listar (`status` em PT-BR) |
-| GET | `/v1/goals/{id}` | Detalhe |
-| GET | `/v1/goals/report/{id}` | Relatório de progresso |
-| PUT | `/v1/goals/{id}` | Atualizar (inclui `version`) |
-| DELETE | `/v1/goals/{id}` | Deletar |
+| POST | `/v1/goals` | Create |
+| GET | `/v1/goals` | List (`status` filter in PT-BR) |
+| GET | `/v1/goals/{id}` | Detail |
+| GET | `/v1/goals/report/{id}` | Progress report |
+| PUT | `/v1/goals/{id}` | Update (includes `version`) |
+| DELETE | `/v1/goals/{id}` | Delete |
 
 ---
 
-## Decisões arquiteturais
+## Architectural decisions
 
-### Cookies httpOnly em vez de `localStorage`
+### httpOnly cookies instead of `localStorage`
 
-**Por que:** `localStorage` é acessível por qualquer JS na página. Um XSS em qualquer dependência npm derruba a sessão. Cookie httpOnly não é lido por JS — mitiga XSS.
+**Why:** `localStorage` is accessible to any JS on the page. An XSS in any npm dependency compromises the session. httpOnly cookies are not readable by JS — mitigates XSS.
 
-**Custo:** precisa de proteção CSRF (`SameSite=Lax` em dev, `Strict` em prod). Como o front e a API são same-origin via proxy/reverse proxy, o custo é zero na prática.
+**Cost:** requires CSRF protection (`SameSite=Lax` in dev, `Strict` in prod). Since frontend and API are same-origin via proxy/reverse proxy, the cost is zero in practice.
 
-### Sem BFF
+### No BFF
 
-O próprio `ms_auth` seta os cookies. Não precisa de camada intermediária Node/Express. Um BFF só é necessário quando o backend não pode/pode ser alterado — não é o caso.
+`ms_auth` itself sets the cookies. No intermediate Node/Express layer is needed. A BFF is only required when the backend can't/shouldn't be modified — not the case here.
 
-### Sem API Gateway
+### No API Gateway
 
-Cada microserviço tem sua própria porta. Em dev, o proxy do Angular consolida em `localhost:4200`; em produção, um reverse proxy (Nginx/Traefik) faz o mesmo papel.
+Each microservice has its own port. In dev, the Angular proxy consolidates everything under `localhost:4200`; in production, a reverse proxy (Nginx/Traefik) plays the same role.
 
-### Cache-aware writes com invalidação
+### Cache-aware writes with invalidation
 
-O `WriteExecutor` do shared invalida o cache do serviço após cada write (INSERT/UPDATE/DELETE) usando `context.WithoutCancel` + `context.WithTimeout`, pra que a goroutine de invalidação não morra quando a request HTTP for cancelada.
+The shared `WriteExecutor` invalidates the service cache after every write (INSERT/UPDATE/DELETE) using `context.WithoutCancel` + `context.WithTimeout`, so the invalidation goroutine doesn't die when the HTTP request is canceled.
 
-### Optimistic locking com `version`
+### Optimistic locking with `version`
 
-Todo `PUT` exige `version`. Se o backend responder `409 Conflict`, significa que alguém alterou o recurso entre o `GET` e o `PUT`. O front mostra um banner pedindo recarregar.
+Every `PUT` requires `version`. If the backend responds `409 Conflict`, it means someone else modified the resource between the `GET` and the `PUT`. The frontend shows a banner asking the user to reload.
 
 ---
 
-## Comandos úteis
+## Useful commands
 
 ### Backend
 
 ```bash
-# Build de tudo
+# Build everything
 go build ./...
 
-# Rodar testes
+# Run tests
 go test ./...
 
-# Rodar um serviço específico
+# Run a specific service
 cd ms_auth && go run ./cmd/api
 
-# Aplicar migration (se tiver ferramenta)
+# Apply migration (if you have the tool)
 make migrate-up
 ```
 
@@ -343,49 +343,49 @@ cd web
 # Dev server
 ng serve
 
-# Build produção
+# Production build
 ng build
 
-# Testes unitários
+# Unit tests
 ng test
 
-# Gerar componente
-ng generate component features/nome/nome
+# Generate component
+ng generate component features/name/name
 ```
 
-### Infraestrutura
+### Infrastructure
 
 ```bash
-# Sobe tudo
+# Start everything
 docker compose up -d
 
-# Ver logs de um container
+# Follow container logs
 docker compose logs -f postgres
 
-# Flush do Redis (dev)
+# Redis flush (dev)
 docker exec -it go_redis_minhas_financas redis-cli -a redis_secure_password FLUSHALL
 
 # Postgres CLI
 docker exec -it go_postgres_minhas_financas psql -U api_user -d api_db
 
-# Ver chaves do cache
+# List cache keys
 docker exec -it go_redis_minhas_financas redis-cli -a redis_secure_password KEYS '*'
 ```
 
 ---
 
-## Variáveis de ambiente (backend)
+## Environment variables (backend)
 
-Arquivo `.env` na raiz (compartilhado) e `.env` por serviço:
+Root `.env` (shared) and per-service `.env`:
 
 ```env
-# Serviços
+# Services
 AUTH_SERVER_PORT=4001
 CATEGORY_SERVER_PORT=4002
 TRANSACTION_SERVER_PORT=4003
 GOAL_SERVER_PORT=4004
 
-# Banco
+# Database
 POSTGRES_USER=api_user
 POSTGRES_PASSWORD=api_password
 POSTGRES_DB=api_db
@@ -400,13 +400,13 @@ REDIS_PASSWORD=redis_secure_password
 KAFKA_PORT_INTERNAL=9092
 KAFKA_PORT_EXTERNAL=9094
 
-# Observabilidade
+# Observability
 OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
 JAEGER_PORT_UI=16686
 ```
 
 ---
 
-## Licença
+## License
 
-Projeto pessoal de portfólio. Sem licença definida.
+Personal portfolio project. No license defined.
