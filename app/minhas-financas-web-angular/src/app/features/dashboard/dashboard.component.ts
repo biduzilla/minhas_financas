@@ -24,7 +24,7 @@ export class DashboardComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err: HttpErrorResponse) => {
-        this.error.set(err.error?.message ?? 'Erro ao carregar resumo');
+        this.error.set(err.error.message);
         this.loading.set(false);
       },
     });

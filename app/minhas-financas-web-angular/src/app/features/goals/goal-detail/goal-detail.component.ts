@@ -60,11 +60,7 @@ export class GoalDetailComponent {
       .subscribe({
         next: (res) => this.report.set(res),
         error: (err: HttpErrorResponse) => {
-          this.error.set(
-            err.status === 404
-              ? 'Meta não encontrada'
-              : err.error?.message ?? 'Erro ao carregar relatório',
-          );
+          this.error.set(err.error.message);
         },
       });
   }

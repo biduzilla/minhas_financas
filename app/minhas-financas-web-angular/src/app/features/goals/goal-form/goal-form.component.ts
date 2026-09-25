@@ -116,15 +116,11 @@ export class GoalFormComponent {
             target_amount: g.target_amount,
             deadline: g.deadline ? g.deadline.substring(0, 10) : '',
             description: g.description ?? '',
-            version: (g as any).version,
+            version: g.version,
           });
         },
         error: (err: HttpErrorResponse) => {
-          this.error.set(
-            err.status === 404
-              ? 'Meta não encontrada'
-              : err.error?.message ?? 'Erro ao carregar meta',
-          );
+          this.error.set(err.error.message);
         },
       });
   }

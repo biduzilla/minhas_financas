@@ -60,9 +60,9 @@ export class SignupComponent {
         this.isPending.set(false);
         if (err.status === 422 && err.error?.errors) {
           this.fieldErrors.set(err.error.errors);
-          this.error.set(err.error.message ?? 'Erro de validação');
+          this.error.set(err.error.message);
         } else {
-          this.error.set(err.error?.message ?? 'Falha ao criar conta');
+          this.error.set(err.error.message);
         }
       },
       complete: () => this.isPending.set(false)

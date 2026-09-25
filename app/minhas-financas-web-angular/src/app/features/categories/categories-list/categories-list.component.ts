@@ -96,7 +96,7 @@ export class CategoriesListComponent {
         },
         error: (err: HttpErrorResponse) => {
           const body = err.error as ApiErrorBody | undefined;
-          this.error.set(body?.message ?? 'Erro ao carregar categorias');
+          this.error.set(err.error.message);
         }
       })
   }
@@ -120,7 +120,7 @@ export class CategoriesListComponent {
         error: (err: HttpErrorResponse) => {
           this.categories.set([]);
           this.metadata.set({});
-          this.error.set(err.message ?? 'Erro ao carregar categorias');
+          this.error.set(err.error.message);
         },
       });
   }

@@ -83,7 +83,7 @@ export class GoalsListComponent {
         error: (err: HttpErrorResponse) => {
           this.goals.set([]);
           this.metadata.set({});
-          this.error.set(err.error?.message ?? 'Erro ao carregar metas');
+         this.error.set(err.error.message);
         },
       });
   }
@@ -123,7 +123,7 @@ export class GoalsListComponent {
         },
         error: (err: HttpErrorResponse) => {
           this.pendingDeleteId.set(null);
-          this.error.set(err.error?.message ?? 'Erro ao excluir meta');
+          this.error.set(err.error.message);
         },
       });
   }

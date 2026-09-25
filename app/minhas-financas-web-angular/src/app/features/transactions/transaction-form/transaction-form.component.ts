@@ -120,11 +120,7 @@ export class TransactionFormComponent {
           });
         },
         error: (err: HttpErrorResponse) => {
-          this.error.set(
-            err.status === 404
-              ? 'Transação não encontrada'
-              : err.error?.message ?? 'Erro ao carregar transação',
-          );
+          this.error.set(err.error.message);
         },
       })
   }

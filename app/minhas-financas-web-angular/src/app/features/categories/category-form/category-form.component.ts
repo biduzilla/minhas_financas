@@ -76,9 +76,9 @@ export class CategoryFormComponent {
         error: (err: HttpErrorResponse) => {
           if (err.status === 422 && err.error?.errors) {
             this.fieldErrors.set(err.error.errors);
-            this.error.set(err.error.message ?? 'Erro de validação');
+            this.error.set(err.error.message);
           } else {
-            this.error.set(err.error?.message ?? 'Falha ao salvar categoria');
+            this.error.set(err.error.message);
           }
         },
       });
@@ -104,11 +104,7 @@ export class CategoryFormComponent {
           });
         },
         error: (err: HttpErrorResponse) => {
-          this.error.set(
-            err.status === 404
-              ? 'Categoria não encontrada'
-              : err.error?.message ?? 'Erro ao carregar categoria',
-          );
+          this.error.set(err.error.message);
         },
       });
   }

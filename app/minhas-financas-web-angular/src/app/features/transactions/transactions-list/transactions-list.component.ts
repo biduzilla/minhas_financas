@@ -76,7 +76,7 @@ export class TransactionsListComponent {
         },
         error: (err: HttpErrorResponse) => {
           this.pendingDeleteId.set(null);
-          this.error.set(err.error?.message ?? 'Erro ao excluir transação');
+          this.error.set(err.error.message);
         },
       });
   }
@@ -152,7 +152,7 @@ export class TransactionsListComponent {
         error: (err: HttpErrorResponse) => {
           this.transactions.set([]);
           this.metadata.set({});
-          this.error.set(err.error?.message ?? 'Erro ao carregar transações');
+          this.error.set(err.error.message);
         }
       })
   }
